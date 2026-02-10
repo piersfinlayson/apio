@@ -108,28 +108,28 @@
 #if defined(APIO_EMULATION)
 #define MAX_PRE_INSTRS   16
 typedef struct {
-    uint32_t irq[MAX_PIO_BLOCKS];
-    uint8_t first_instr[MAX_PIO_BLOCKS][MAX_SMS_PER_BLOCK];
-    uint8_t start[MAX_PIO_BLOCKS][MAX_SMS_PER_BLOCK];
-    uint8_t end[MAX_PIO_BLOCKS][MAX_SMS_PER_BLOCK];
-    uint8_t wrap_bottom[MAX_PIO_BLOCKS][MAX_SMS_PER_BLOCK];
-    uint8_t wrap_top[MAX_PIO_BLOCKS][MAX_SMS_PER_BLOCK];
-    pio_sm_reg_t pio_sm_reg[MAX_PIO_BLOCKS][MAX_SMS_PER_BLOCK];
-    uint16_t instr[MAX_PIO_BLOCKS][MAX_PIO_INSTRS];
-    uint16_t pre_instr[MAX_PIO_BLOCKS][MAX_SMS_PER_BLOCK][MAX_PRE_INSTRS];
-    uint8_t pre_instr_count[MAX_PIO_BLOCKS][MAX_SMS_PER_BLOCK];
-    uint32_t tx_fifos[MAX_PIO_BLOCKS][MAX_SMS_PER_BLOCK][MAX_FIFO_DEPTH];
-    uint8_t tx_fifo_count[MAX_PIO_BLOCKS][MAX_SMS_PER_BLOCK];
-    uint32_t rx_fifos[MAX_PIO_BLOCKS][MAX_SMS_PER_BLOCK][MAX_FIFO_DEPTH];
-    uint8_t rx_fifo_count[MAX_PIO_BLOCKS][MAX_SMS_PER_BLOCK];
-    uint8_t offset[MAX_PIO_BLOCKS];
-    uint8_t max_offset[MAX_PIO_BLOCKS];
-    uint8_t enabled_sms[MAX_PIO_BLOCKS];
+    uint32_t irq[APIO_MAX_PIO_BLOCKS];
+    uint8_t first_instr[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK];
+    uint8_t start[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK];
+    uint8_t end[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK];
+    uint8_t wrap_bottom[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK];
+    uint8_t wrap_top[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK];
+    pio_sm_reg_t pio_sm_reg[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK];
+    uint16_t instr[APIO_MAX_PIO_BLOCKS][APIO_MAX_PIO_INSTRS];
+    uint16_t pre_instr[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK][MAX_PRE_INSTRS];
+    uint8_t pre_instr_count[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK];
+    uint32_t tx_fifos[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK][APIO_MAX_FIFO_DEPTH];
+    uint8_t tx_fifo_count[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK];
+    uint32_t rx_fifos[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK][APIO_MAX_FIFO_DEPTH];
+    uint8_t rx_fifo_count[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK];
+    uint8_t offset[APIO_MAX_PIO_BLOCKS];
+    uint8_t max_offset[APIO_MAX_PIO_BLOCKS];
+    uint8_t enabled_sms[APIO_MAX_PIO_BLOCKS];
     uint8_t block;
     uint8_t sm;
-    uint8_t block_ended[MAX_PIO_BLOCKS];
+    uint8_t block_ended[APIO_MAX_PIO_BLOCKS];
     uint8_t pios_enabled;
-    uint32_t gpio_base[MAX_PIO_BLOCKS];
+    uint32_t gpio_base[APIO_MAX_PIO_BLOCKS];
 } _apio_emulated_pio_t;
 extern _apio_emulated_pio_t _apio_emulated_pio;
 #define __blk  _apio_emulated_pio.block
@@ -140,13 +140,13 @@ extern _apio_emulated_pio_t _apio_emulated_pio;
 #define __pio_end   _apio_emulated_pio.end
 #define __pio_offset _apio_emulated_pio.offset
 #define __pio_first_instr _apio_emulated_pio.first_instr
-#undef PIO0_SM_REG
-#define PIO0_SM_REG(SM)  (&_apio_emulated_pio.pio_sm_reg[__blk][SM])
-#undef PIO1_SM_REG
-#define PIO1_SM_REG(SM)  (&_apio_emulated_pio.pio_sm_reg[__blk][SM])
-#undef PIO2_SM_REG
-#define PIO2_SM_REG(SM)  (&_apio_emulated_pio.pio_sm_reg[__blk][SM])
-#if defined(TEST_PIO_C)
+#undef APIO0_SM_REG
+#define APIO0_SM_REG(SM)  (&_apio_emulated_pio.pio_sm_reg[__blk][SM])
+#undef APIO1_SM_REG
+#define APIO1_SM_REG(SM)  (&_apio_emulated_pio.pio_sm_reg[__blk][SM])
+#undef APIO2_SM_REG
+#define APIO2_SM_REG(SM)  (&_apio_emulated_pio.pio_sm_reg[__blk][SM])
+#if !defined(APIO_EMU_NO_IMPL)
 _apio_emulated_pio_t _apio_emulated_pio = {
     .irq = {0xFFFFFFFF},
     .first_instr = {{0xFF}},
@@ -175,7 +175,7 @@ _apio_emulated_pio_t _apio_emulated_pio = {
     .block_ended = {0xFF},
     .pios_enabled = 0xFF
 };
-#endif // TEST_PIO_C
+#endif // APIO_EMU_NO_IMPL
 #endif // APIO_EMULATION
 
 // Internal macros - do not use directly
@@ -386,7 +386,7 @@ static inline volatile uint32_t* _apio_rxf_ptr(uint8_t block, uint8_t sm) {
 #if !defined(APIO_EMULATION)
 #define APIO_TXF (*_apio_txf_ptr(__blk, __sm))
 #else // APIO_EMULATION
-#define PIO_TXF _apio_emulated_pio.tx_fifos[__blk][__sm][_apio_emulated_pio.tx_fifo_count[__blk][__sm]++]
+#define APIO_TXF _apio_emulated_pio.tx_fifos[__blk][__sm][_apio_emulated_pio.tx_fifo_count[__blk][__sm]++]
 #endif // !APIO_EMULATION
 
 // Access the current SM's RX FIFO
