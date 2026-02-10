@@ -38,6 +38,9 @@
 // When enabled, APIO_LOG(...) and APIO_LOG_SM(NAME) will call the provided
 // function. When disabled, both expand to no-ops and the disassembler and
 // logging functions are excluded from the build entirely.
+//
+// You must also have #define APIO_LOG_IMPL 1 in one C file to include the
+// implementation of the logging functions.
 #if defined(APIO_LOG_ENABLE)
 
 #define APIO_LOG(...) APIO_LOG_ENABLE(__VA_ARGS__)
@@ -95,7 +98,7 @@ void apio_log_sm(
     uint8_t end
 );
 
-#if defined(APIO_LOG_ENABLE) && !defined(APIO_LOG_NO_IMPL)
+#if defined(APIO_LOG_ENABLE) && defined(APIO_LOG_IMPL)
 
 static const char* piorom_get_jmp_condition(uint8_t cond) {
     switch (cond) {
@@ -523,6 +526,6 @@ void apio_log_sm(
     }
 }
 
-#endif // APIO_LOG_ENABLE && !APIO_LOG_NO_IMPL
+#endif // APIO_LOG_ENABLE && APIO_LOG_NO_IMPL
 
 #endif // APIO_DIS_H

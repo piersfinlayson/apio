@@ -26,6 +26,7 @@
 
 // Use RTT for logging
 #include <SEGGER_RTT.h>
+#define APIO_LOG_IMPL  1
 #define APIO_LOG_ENABLE(...) do { \
                                 SEGGER_RTT_printf(0, __VA_ARGS__); \
                                 SEGGER_RTT_printf(0, "\n"); \
