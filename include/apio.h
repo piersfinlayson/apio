@@ -98,7 +98,6 @@
 
 #include <stdint.h>
 #include <apio_reg.h>
-#include <apio_dis.h>
 
 #define APIO_MAX_PIO_INSTRS      32
 #define APIO_MAX_SMS_PER_BLOCK   4
@@ -177,6 +176,10 @@ _apio_emulated_pio_t _apio_emulated_pio = {
 };
 #endif // APIO_EMU_NO_IMPL
 #endif // APIO_EMULATION
+
+// Include disassembler here to allow APIOX_SM_REG to be redefined for
+// emulation
+#include <apio_dis.h>
 
 // Internal macros - do not use directly
 #define _STATIC_BLOCK_ASSERT(BLOCK) _Static_assert((BLOCK) >= 0 && (BLOCK) < APIO_MAX_PIO_BLOCKS, "Invalid PIO block")
