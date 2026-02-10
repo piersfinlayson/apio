@@ -36,7 +36,7 @@ CFLAGS := ${COMMON_FLAGS} -I include ${SEGGER_RTT_FLAGS} \
 LDFLAGS := ${COMMON_FLAGS} -Werror -Llink -nostdlib -specs=nosys.specs -specs=nano.specs -Wl,--fatal-warnings -Wl,-Map=$(MAP) -T $(LDSCRIPT)
 
 # Targets
-.PHONY: all uf2 clean segger-rtt flash
+.PHONY: all uf2 clean segger-rtt flash clean-segger-rtt
 
 all: $(BIN)
 
@@ -45,12 +45,7 @@ uf2: $(UF2)
 $(BUILD_DIR):
 	@mkdir -p $@
 
-$(BUILD_DIR)/%.o: src/%.c | $(BUILD_DIR)
-	@mkdir -p $(@D)
-	@echo "- Compiling src/$<"
-	@$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/%.o: example/%.c | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: example/%.c | $(BUILD_DIR) segger-rtt
 	@mkdir -p $(@D)
 	@echo "- Compiling example/$<"
 	@$(CC) $(CFLAGS) -c $< -o $@
@@ -83,7 +78,10 @@ segger-rtt:
 		git clone https://github.com/piersfinlayson/segger-rtt.git; \
 	fi
 
-clean:
+clean-segger-rtt:
+	@rm -rf segger-rtt
+
+clean: clean-segger-rtt
 	@rm -rf $(BUILD_DIR)
 
 flash: $(UF2)
