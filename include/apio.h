@@ -146,7 +146,7 @@ extern _apio_emulated_pio_t _apio_emulated_pio;
 #define APIO1_SM_REG(SM)  (&_apio_emulated_pio.pio_sm_reg[__blk][SM])
 #undef APIO2_SM_REG
 #define APIO2_SM_REG(SM)  (&_apio_emulated_pio.pio_sm_reg[__blk][SM])
-#if !defined(APIO_EMU_NO_IMPL)
+#if defined(APIO_EMU_IMPL)
 _apio_emulated_pio_t _apio_emulated_pio = {
     .irq = {0xFFFFFFFF},
     .first_instr = {{0xFF}},
