@@ -5,7 +5,7 @@
 #   TOOLCHAIN=/path/to/arm-none-eabi-gcc make
 #
 
-TOOLCHAIN ?= /opt/arm-gnu-toolchain-14.3.rel1-darwin-arm64-arm-none-eabi/bin
+TOOLCHAIN ?= /usr/bin
 CC := $(TOOLCHAIN)/arm-none-eabi-gcc
 LD := $(TOOLCHAIN)/arm-none-eabi-gcc
 OBJCOPY := $(TOOLCHAIN)/arm-none-eabi-objcopy

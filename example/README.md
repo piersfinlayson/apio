@@ -10,7 +10,7 @@ To build, from the root of the repository:
 make
 ```
 
-If the arm-none-eabi toolchain is not in your PATH, set `TOOLCHAIN`:
+If the arm-none-eabi toolchain is not in `/usr/bin`, set `TOOLCHAIN`:
 
 ```bash
 export TOOLCHAIN=/path/to/arm-none-eabi-toolchain
