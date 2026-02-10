@@ -22,7 +22,9 @@
 
 // apio - Runtime RP2350 PIO Assembler and Disassembler
 //
-// Example using apio to create a simple PIO program that toggles GPIO0.
+// Example using apio to create a simple PIO program that toggles GPIO0.  It
+// decides, at runtime, how long to pause for between toggles based on a
+// random bit from the RP2350's ring oscillator.
 
 // Use RTT for logging
 #include <SEGGER_RTT.h>
@@ -34,6 +36,10 @@
 
 // Include the apio assembler headers
 #include <apio.h>
+
+// Random number generator register definitions
+#define RNG_VALID   (*(volatile uint32_t *)0x400F0110 & 1)
+#define RANDOM_BIT  (*(volatile uint32_t *)0x400F0114 & 1)
 
 int main() {
     // Enable JTAG/SWD for logging
@@ -53,12 +59,16 @@ int main() {
     APIO_SET_BLOCK(0);      // Select PIO block 0
     APIO_SET_SM(0);         // Select state machine 0
 
+    // Choose between two delay durations based on the RP2350's TRNG
+    while (!RNG_VALID);     // Wait for RNG to be valid
+    uint8_t pause_count = RANDOM_BIT ? 15 : 30;
+
     // PIO0 SM0 program
     APIO_ADD_INSTR(APIO_SET_PIN_DIRS(1));   // Set pin as output
     APIO_WRAP_BOTTOM();                     // Set .wrap_bottom to current instruction address
-    APIO_ADD_INSTR(APIO_ADD_DELAY(APIO_SET_PINS(1), 31)); // Drive pin high, and wait for 31 cycles
+    APIO_ADD_INSTR(APIO_ADD_DELAY(APIO_SET_PINS(1), pause_count)); // Drive pin high, and pause
     APIO_WRAP_TOP();                        // Set .wrap_top to current instruction address
-    APIO_ADD_INSTR(APIO_ADD_DELAY(APIO_SET_PINS(0), 31)); // Drive pin low, and wait for 31 cycles
+    APIO_ADD_INSTR(APIO_ADD_DELAY(APIO_SET_PINS(0), pause_count)); // Drive pin low, and pause
 
     // Configure PIO0 SM0
     APIO_SM_CLKDIV_SET(15000, 0);   // Set clock divider so runs at 0.01 MHz (150 MHz / 15000)

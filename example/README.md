@@ -1,6 +1,6 @@
 # apio Example
 
-This completely bare metal example demonstrates how to use `apio` to build and run a simple PIO program on the RP2350.  It toggles GPIO0 at around 10Hz.
+This completely bare metal example demonstrates how to use `apio` to build and run a simple PIO program on the RP2350.  It toggles GPIO0 at around 10 or 20Hz, depending on a random bit from the RP2350's TRNG at runtime.
 
 ## Build
 

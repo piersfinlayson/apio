@@ -28,11 +28,13 @@ APIO_CLEAR_ALL_IRQS();          // Clear any pending PIO IRQs
 APIO_SET_BLOCK(0);              // Select PIO block 0
 APIO_SET_SM(0);                 // Select state machine 0
 
+uint8_t pause_count = RANDOM_BIT ? 15 : 30; // Choose between two delay values at runtime
+
 APIO_ADD_INSTR(APIO_SET_PIN_DIRS(1));   // Set pin as output
 APIO_WRAP_BOTTOM();                     // Set .wrap_bottom to current instruction address
-APIO_ADD_INSTR(APIO_ADD_DELAY(APIO_SET_PINS(1), 31));   // Drive pin high, and wait for 31 cycles
+APIO_ADD_INSTR(APIO_ADD_DELAY(APIO_SET_PINS(1), pause_count));  // Drive pin high, and pause
 APIO_WRAP_TOP();                        // Set .wrap_top to current instruction address
-APIO_ADD_INSTR(APIO_ADD_DELAY(APIO_SET_PINS(0), 31));   // Drive pin low, and wait for 31 cycles
+APIO_ADD_INSTR(APIO_ADD_DELAY(APIO_SET_PINS(0), pause_count));  // Drive pin low, and pause
 
 APIO_SM_CLKDIV_SET(150, 0);     // Set clock divider to 150.0
 APIO_SM_EXECCTRL_SET(0);        // No EXECCTRL features enabled
@@ -59,8 +61,8 @@ CLKDIV: 15000.00 EXECCTRL: 0x00002080 SHIFTCTRL: 0x00000000 PINCTRL: 0x04000000
 .start
   0: 0xE081 ; set pindirs, 1
 .wrap_target
-  1: 0xFF01 ; set pins, 1 [31]
-  2: 0xFF00 ; set pins, 0 [31]
+  1: 0xFF01 ; set pins, 1 [30]
+  2: 0xFF00 ; set pins, 0 [30]
 .wrap
 ```
 
