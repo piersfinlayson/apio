@@ -94,7 +94,7 @@ CLKDIV: 15000.00 EXECCTRL: 0x00002080 SHIFTCTRL: 0x00000000 PINCTRL: 0x04000000
 
 When using with `epio`:
 
-- Compile your firmware with `APIO_EMULATE` defined before `apio.h` is included.  This is most easily done by passing `-DAPIO_EMULATE` to the compiler.
+- Compile your firmware with `APIO_EMULATION` defined before `apio.h` is included.  This is most easily done by passing `-DAPIO_EMULATION` to the compiler.
 - One source file including `apio.h` must have `#define APIO_EMU_IMPL 1` before the header include, to include a single instance of the emulation capability.
 - Once your `apio` assembler code has run, call `epio_from_apio()` to load `epio` with the assembled PIO programs and configuration.
 

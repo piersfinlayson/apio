@@ -191,26 +191,38 @@ _apio_emulated_pio_t _apio_emulated_pio = {
 #define _OFFSET_ARRAY_INIT       {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
 
 // Macro to bring JTAG/SWD out of reset, for SWD logging
+#if !defined(APIO_EMULATION)
 #define APIO_ENABLE_JTAG() do { \
                                 APIO_RESET_RESET &= ~APIO_RESET_JTAG; \
                                 while (!(APIO_RESET_DONE & APIO_RESET_JTAG)); \
                             } while(0)
+#else // APIO_EMULATION
+#define APIO_ENABLE_JTAG()
+#endif // !APIO_EMULATION
 
 
 // Macro to bring IOBANK0 and PADS_BANK0 out of reset, allowing GPIO usage.
+#if !defined(APIO_EMULATION)
 #define APIO_ENABLE_GPIOS() do { \
                                 APIO_RESET_RESET &= ~(APIO_RESET_IOBANK0 | APIO_RESET_PADS_BANK0); \
                                 while (!(APIO_RESET_DONE & (APIO_RESET_IOBANK0 | APIO_RESET_PADS_BANK0))); \
                             } while(0)
+#else // APIO_EMULATION
+#define APIO_ENABLE_GPIOS()
+#endif // !APIO_EMULATION
 
 // Configure a GPIO for (output) usage by a PIO block.  Also disables the
 // pad's isolation setting and any pad output disable.
+#if !defined(APIO_EMULATION)
 #define APIO_GPIO_OUTPUT(PIN, BLOCK) \
                             do { \
                                 _STATIC_BLOCK_ASSERT(BLOCK); \
                                 APIO_GPIO_CTRL(PIN) = APIO_GPIO_CTRL_FUNC_PIO0 + (BLOCK); \
                                 APIO_GPIO_PAD(PIN) &= ~(APIO_PAD_ISO_BIT | APIO_PAD_OUTPUT_DIS_BIT); \
                             } while(0)
+#else // APIO_EMULATION
+#define APIO_GPIO_OUTPUT(PIN, BLOCK)
+#endif // !APIO_EMULATION
 
 // Clears IRQs for the specified PIO block
 #if !defined(APIO_EMULATION)
@@ -223,8 +235,8 @@ _apio_emulated_pio_t _apio_emulated_pio = {
                                     APIO2_IRQ = 0xFFFFFFFF;  \
                                 }
 #else // APIO_EMULATION
-
-
+#define PIO_CLEAR_IRQ(BLOCK)    _STATIC_BLOCK_ASSERT(BLOCK); \
+                                _apio_emulated_pio.irq[BLOCK] = 0xFFFFFFFF
 #endif // !APIO_EMULATION
 
 // Clear all PIO IRQs
@@ -565,7 +577,7 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 #if !defined(APIO_EMULATION)
 #define APIO_ASM_WFI()               __asm volatile("wfi")
 #else // APIO_EMULATION
-#define APIO_ASM_WFI()               return
+#define APIO_ASM_WFI()               return 0
 #endif // !APIO_EMULATION
 
 #endif // APIO_H
