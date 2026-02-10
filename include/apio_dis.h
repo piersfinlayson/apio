@@ -95,7 +95,7 @@ void apio_log_sm(
     uint8_t end
 );
 
-#if defined(APIO_LOG_ENABLE)
+#if defined(APIO_LOG_ENABLE) && !defined(APIO_LOG_NO_IMPL)
 
 static const char* piorom_get_jmp_condition(uint8_t cond) {
     switch (cond) {
@@ -523,6 +523,6 @@ void apio_log_sm(
     }
 }
 
-#endif // APIO_LOG_ENABLE
+#endif // APIO_LOG_ENABLE && !APIO_LOG_NO_IMPL
 
 #endif // APIO_DIS_H

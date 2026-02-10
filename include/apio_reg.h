@@ -40,7 +40,6 @@ typedef struct pio_sm_reg {
 } pio_sm_reg_t;
 
 // Base register addresses
-#define ADMA_BASE               (0x50000000U)
 #define APIO0_BASE              (0x50200000U)
 #define APIO1_BASE              (0x50300000U)
 #define APIO2_BASE              (0x50400000U)
