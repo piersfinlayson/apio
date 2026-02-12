@@ -464,22 +464,22 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 #endif // !APIO_EMULATION
 
 // Set GPIOBASE to 0 for the current PIO block
-#define APIO_BLOCK_GPIOBASE_0()      if (__blk == 0) {                 \
-                                        APIO0_GPIOBASE = APIO_GPIOBASE_0; \
-                                    } else if (__blk == 1) {          \
-                                        APIO1_GPIOBASE = APIO_GPIOBASE_0; \
-                                    } else {                            \
-                                        APIO2_GPIOBASE = APIO_GPIOBASE_0; \
-                                    }
+#define APIO_GPIOBASE_0()   if (__blk == 0) {                 \
+                                APIO0_GPIOBASE = APIO_GPIOBASE_VAL_0; \
+                            } else if (__blk == 1) {          \
+                                APIO1_GPIOBASE = APIO_GPIOBASE_VAL_0; \
+                            } else {                            \
+                                APIO2_GPIOBASE = APIO_GPIOBASE_VAL_0; \
+                            }
 
 // Set GPIOBASE to 16 for the current PIO block
-#define APIO_BLOCK_GPIOBASE_16()     if (__blk == 0) {                     \
-                                        APIO0_GPIOBASE = APIO_GPIOBASE_16;    \
-                                    } else if (__blk == 1) {              \
-                                        APIO1_GPIOBASE = APIO_GPIOBASE_16;    \
-                                    } else {                                \
-                                        APIO2_GPIOBASE = APIO_GPIOBASE_16;    \
-                                    }
+#define APIO_GPIOBASE_16()  f (__blk == 0) {                     \
+                                APIO0_GPIOBASE = APIO_GPIOBASE_VAL_16;    \
+                            } else if (__blk == 1) {              \
+                                APIO1_GPIOBASE = APIO_GPIOBASE_VAL_16;    \
+                            } else {                                \
+                                APIO2_GPIOBASE = APIO_GPIOBASE_VAL_16;    \
+                            }
 
 //
 // PIO Instruction Macros
