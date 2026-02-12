@@ -500,6 +500,9 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 // Jump to label if X register is non-zero and then decrement Y after the test
 #define APIO_JMP_X_DEC(DEST)         (0x0040 | ((DEST) & 0x1F))
 
+// Jump to label if Y register is zero
+#define APIO_JMP_NOT_Y(DEST)         (0x0060 | ((DEST) & 0x1F))
+
 // Jump to label if Y register is non-zero and then decrement X after the test
 #define APIO_JMP_Y_DEC(DEST)         (0x0080 | ((DEST) & 0x1F))
 
@@ -508,6 +511,9 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 
 // Jump to label if pin specified as the EXECCTRL JMP_PIN is high
 #define APIO_JMP_PIN(X)              (0x00C0 | ((X) & 0x1F))
+
+// Jump to label if the OSR is not empty
+#define APIO_JMP_NOT_OSRE            (0x00E0)
 
 // Set the output pin values to 0 (low)
 #define APIO_MOV_PINS_NULL           0xA003
@@ -532,6 +538,27 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 
 // Move data from OSR to the output pins
 #define APIO_OUT_PINS(NUM)           (0x6000 | ((NUM) & 0x1F))
+
+// Move data from OSR to X register
+#define APIO_OUT_X(NUM)              (0x6020 | ((NUM) & 0x1F))
+
+// Move data from OSR to Y register
+#define APIO_OUT_Y(NUM)              (0x6040 | ((NUM) & 0x1F))
+
+// Move data from OSR to null (discard)
+#define APIO_OUT_NULL(NUM)           (0x6060 | ((NUM) & 0x1F))
+
+// Move data from OSR to pin directions
+#define APIO_OUT_PINDIRS(NUM)        (0x6080 | ((NUM) & 0x1F))
+
+// Move data from OSR to PC
+#define APIO_OUT_PC(NUM)             (0x60A0 | ((NUM) & 0x1F))
+
+// Move data from OSR to ISR
+#define APIO_OUT_ISR(NUM)            (0x60C0 | ((NUM) & 0x1F))
+
+// Move data from OSR to EXEC (execute as instruction)
+#define APIO_OUT_EXEC(NUM)           (0x60E0 | ((NUM) & 0x1F))
 
 // Pull data from the TX FIFO into the OSR, blocking if FIFO is empty
 #define APIO_PULL_BLOCK              0x80A0
