@@ -602,6 +602,15 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 // Pull data from the TX FIFO into the OSR, blocking if FIFO is empty
 #define APIO_PULL_BLOCK              0x80A0
 
+// Pull from TX FIFO into OSR, non-blocking (copies X to OSR if empty)
+#define APIO_PULL_NOBLOCK            0x8080
+
+// Pull from TX FIFO if OSR shift threshold met, blocking
+#define APIO_PULL_IFEMPTY_BLOCK      0x80E0
+
+// Pull from TX FIFO if OSR shift threshold met, non-blocking
+#define APIO_PULL_IFEMPTY_NOBLOCK    0x80C0
+
 // Push data from the ISR into the RX FIFO, blocking if FIFO is full
 #define APIO_PUSH_BLOCK              0x8020
 
