@@ -497,6 +497,15 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 // Move Y to the ISR
 #define APIO_IN_Y(NUM)               (0x4040 | ((NUM) & 0x1F))
 
+// Move null (zeros) to the ISR
+#define APIO_IN_NULL(NUM)            (0x4060 | ((NUM) & 0x1F))
+
+// Move ISR to ISR
+#define APIO_IN_ISR(NUM)             (0x40C0 | ((NUM) & 0x1F))
+
+// Move OSR to ISR
+#define APIO_IN_OSR(NUM)             (0x40E0 | ((NUM) & 0x1F))
+
 // Clear one of this PIO block's IRQs
 #define APIO_IRQ_CLEAR(X)            (0xC040 | ((X) & 0x07))
 
