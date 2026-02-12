@@ -114,6 +114,10 @@ typedef struct pio_sm_reg {
 #define APIO1_GPIOBASE (*(volatile uint32_t *)(PIO1_BASE + PIO_GPIOBASE_OFFSET))
 #define APIO2_GPIOBASE (*(volatile uint32_t *)(PIO2_BASE + PIO_GPIOBASE_OFFSET))
 
+// GPIOBASE
+#define APIO_GPIOBASE_0          (0)
+#define APIO_GPIOBASE_16         (1 << 4)
+
 // Macros for PIO control registers
 #define APIO_CTRL_SM_ENABLE(X)      ((X & 0xf) << 0)
 #define APIO0_CTRL_SM_ENABLE(X)     APIO0_CTRL = APIO_CTRL_SM_ENABLE(X)
