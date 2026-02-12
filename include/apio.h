@@ -530,6 +530,21 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 // Set on the PIO block's IRQs to 1 using relative addressing
 #define APIO_IRQ_SET_REL(X)          (0xC010 | ((X) & 0x07))
 
+// Set one of this PIO block's IRQs to 1 and then wait for it to be cleared
+#define APIO_IRQ_SET_WAIT(X)          (0xC020 | ((X) & 0x07))
+
+// Set one of the previous PIO block's IRQs to 1 and then wait for it to be
+// cleared
+#define APIO_IRQ_SET_WAIT_PREV(X)     (0xC028 | ((X) & 0x07))
+
+// Set one of the next PIO block's IRQs to 1 and then wait for it to be
+// cleared
+#define APIO_IRQ_SET_WAIT_NEXT(X)     (0xC038 | ((X) & 0x07))
+
+// Set one of the PIO block's IRQs to 1 using relative addressing and then wait
+// for it to be cleared 
+#define APIO_IRQ_SET_WAIT_REL(X)      (0xC030 | ((X) & 0x07))
+
 // Jump unconditionally to label X within this PIO program 
 #define APIO_JMP(X)                  (0x0000 | ((X) & 0x1F))
 
