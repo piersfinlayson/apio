@@ -605,6 +605,15 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 // Push data from the ISR into the RX FIFO, blocking if FIFO is full
 #define APIO_PUSH_BLOCK              0x8020
 
+// Push ISR to RX FIFO, non-blocking (continues if full)
+#define APIO_PUSH_NOBLOCK            0x8000
+
+// Push ISR to RX FIFO if shift threshold met, blocking
+#define APIO_PUSH_IFFULL_BLOCK       0x8060
+
+// Push ISR to RX FIFO if shift threshold met, non-blocking
+#define APIO_PUSH_IFFULL_NOBLOCK     0x8040
+
 // Set output pins to VALUE (0-31)
 #define APIO_SET_PINS(VALUE)         (0xE000 | ((VALUE) & 0x1F))
 
