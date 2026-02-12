@@ -29,12 +29,15 @@
 
 #include <stdint.h>
 
-// Structure representing the registers of a PIO state machine
+// Structure representing the registers of a PIO state machine.
+//
+// These are at 0xc8 + (SM_NUM * 0x18) from the base of the PIO block register
+// space.
 typedef struct pio_sm_reg {
     uint32_t clkdiv;
     uint32_t execctrl;
     uint32_t shiftctrl;
-    uint32_t addr;
+    uint32_t addr;  // Read only
     uint32_t instr;
     uint32_t pinctrl; 
 } pio_sm_reg_t;

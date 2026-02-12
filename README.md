@@ -1,6 +1,4 @@
-# apio
-
-**_Runtime RP2350 PIO Assembler and Disassembler_**
+# apio - A Runtime RP2350 PIO Assembler and Disassembler
 
 PIO programs are typically fixed at build time, using Raspberry Pi's `pioasm` PIO assembler, with the assembled code included in the firmware source.  However, there are cases where you need to generate PIO programs dynamically at runtime, using boot configuration or other program state to determine the PIO program configuration.
 
