@@ -578,6 +578,24 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 // Set output pin directions to VALUE (0-31)
 #define APIO_SET_PIN_DIRS(VALUE)     (0xE080 | ((VALUE) & 0x1F))
 
+// Wait for GPIO to be high
+#define APIO_WAIT_GPIO_HIGH(X)       (0x2080 | ((X) & 0x1F))
+
+// Wait for GPIO to be low
+#define APIO_WAIT_GPIO_LOW(X)        (0x2000 | ((X) & 0x1F))
+
+// Wait for the specified pin to go high
+#define APIO_WAIT_PIN_HIGH(X)        (0x20A0 | ((X) & 0x1F))
+
+// Wait for the specified pin to go low
+#define APIO_WAIT_PIN_LOW(X)         (0x2020 | ((X) & 0x1F))
+
+// Wait for JMP_PIN to be high
+#define APIO_WAIT_JMP_PIN_HIGH()     (0x20E0)
+
+// Wait for JMP_PIN to be low
+#define APIO_WAIT_JMP_PIN_LOW()      (0x2060)
+
 // Wait for one of this PIO block's IRQs to go high.  Clears the IRQ
 // after the instruction (so other PIOs waiting at the same time will also be
 // triggered).
@@ -597,9 +615,6 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 
 // Wait for one of the next PIO block's IRQs to go low.
 #define APIO_WAIT_IRQ_LOW_NEXT(X)    (0x2058 | ((X) & 0x07))
-
-// Wait for the specified pin to go high
-#define APIO_WAIT_PIN_HIGH(X)        (0x20A0 | ((X) & 0x1F))
 
 #if !defined(APIO_EMULATION)
 #define APIO_ASM_WFI()               __asm volatile("wfi")
