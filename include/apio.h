@@ -482,6 +482,9 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 // Clear one of the next PIO block's IRQs
 #define APIO_IRQ_CLEAR_NEXT(X)       (0xC058 | ((X) & 0x07))
 
+// Clear one of the PIO block's IRQs using relative addressing
+#define APIO_IRQ_CLEAR_REL(X)        (0xC050 | ((X) & 0x07))
+
 // Set one of this PIO block's IRQs to 1
 #define APIO_IRQ_SET(X)              (0xC000 | ((X) & 0x07))
 
@@ -490,6 +493,9 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 
 // Set one of the next PIO block's IRQs to 1
 #define APIO_IRQ_SET_NEXT(X)         (0xC018 | ((X) & 0x07))
+
+// Set on the PIO block's IRQs to 1 using relative addressing
+#define APIO_IRQ_SET_REL(X)          (0xC010 | ((X) & 0x07))
 
 // Jump unconditionally to label X within this PIO program 
 #define APIO_JMP(X)                  (0x0000 | ((X) & 0x1F))
@@ -607,6 +613,9 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 // Wait for one of the next PIO block's IRQs to go high.
 #define APIO_WAIT_IRQ_HIGH_NEXT(X)   (0x20D8 | ((X) & 0x07))
 
+// Wait for an IRQ to go high, using relative addressing mode
+#define APIO_WAIT_IRQ_HIGH_REL(X)    (0x20D0| ((X) & 0x07))
+
 // Wait for one of this PIO block's IRQs to go low.
 #define APIO_WAIT_IRQ_LOW(X)         (0x2040 | ((X) & 0x07))
 
@@ -615,6 +624,9 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 
 // Wait for one of the next PIO block's IRQs to go low.
 #define APIO_WAIT_IRQ_LOW_NEXT(X)    (0x2058 | ((X) & 0x07))
+
+// Wait for an IRQ to go low, using relative addressing mode
+#define APIO_WAIT_IRQ_LOW_REL(X)     (0x2050| ((X) & 0x07))
 
 #if !defined(APIO_EMULATION)
 #define APIO_ASM_WFI()               __asm volatile("wfi")
