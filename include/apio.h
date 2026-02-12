@@ -145,6 +145,12 @@ extern _apio_emulated_pio_t _apio_emulated_pio;
 #define APIO1_SM_REG(SM)  (&_apio_emulated_pio.pio_sm_reg[__blk][SM])
 #undef APIO2_SM_REG
 #define APIO2_SM_REG(SM)  (&_apio_emulated_pio.pio_sm_reg[__blk][SM])
+#undef APIO0_GPIOBASE
+#define APIO0_GPIOBASE _apio_emulated_pio.gpio_base[0] 
+#undef APIO1_GPIOBASE 
+#define APIO1_GPIOBASE _apio_emulated_pio.gpio_base[1] 
+#undef APIO2_GPIOBASE
+#define APIO2_GPIOBASE _apio_emulated_pio.gpio_base[2]
 #if defined(APIO_EMU_IMPL)
 _apio_emulated_pio_t _apio_emulated_pio = {
     .irq = {0xFFFFFFFF},
@@ -456,6 +462,24 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
                                         _Static_assert((SM_MASK < 0xF), "Attempt to enable invalid SM"); \
                                         _apio_emulated_pio.enabled_sms[BLOCK] |= SM_MASK
 #endif // !APIO_EMULATION
+
+// Set GPIOBASE to 0 for the current PIO block
+#define APIO_BLOCK_GPIOBASE_0()      if (__block == 0) {                 \
+                                        APIO0_GPIOBASE = APIO_GPIOBASE_0; \
+                                    } else if (__block == 1) {          \
+                                        APIO1_GPIOBASE = APIO_GPIOBASE_0; \
+                                    } else {                            \
+                                        APIO2_GPIOBASE = APIO_GPIOBASE_0; \
+                                    }
+
+// Set GPIOBASE to 16 for the current PIO block
+#define APIO_BLOCK_GPIOBASE_16()     if (__block == 0) {                     \
+                                        APIO0_GPIOBASE = APIO_GPIOBASE_16;    \
+                                    } else if (__block == 1) {              \
+                                        APIO1_GPIOBASE = APIO_GPIOBASE_16;    \
+                                    } else {                                \
+                                        APIO2_GPIOBASE = APIO_GPIOBASE_16;    \
+                                    }
 
 //
 // PIO Instruction Macros

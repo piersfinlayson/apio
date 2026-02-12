@@ -83,6 +83,7 @@ typedef struct pio_sm_reg {
 #define APIO_SM_REG_OFFSET              (0xC8)
 #define APIO_SM_RXF_OFFSET              (0x128)
 #define APIO_SM_TXF_OFFSET              (0x138)
+#define APIO_GPIOBASE_OFFSET            (0x168)
 
 /// Macros for accessing PIO control registers
 #define APIO0_CTRL          (*(volatile uint32_t *)(APIO0_BASE + APIO_CTRL_OFFSET))
@@ -109,6 +110,9 @@ typedef struct pio_sm_reg {
 #define APIO0_INPUT_SYNC_BYPASS  (*(volatile uint32_t *)(APIO0_BASE + APIO_INPUT_SYNC_BYPASS_OFFSET))
 #define APIO1_INPUT_SYNC_BYPASS  (*(volatile uint32_t *)(APIO1_BASE + APIO_INPUT_SYNC_BYPASS_OFFSET))
 #define APIO2_INPUT_SYNC_BYPASS  (*(volatile uint32_t *)(APIO2_BASE + APIO_INPUT_SYNC_BYPASS_OFFSET))
+#define APIO0_GPIOBASE (*(volatile uint32_t *)(PIO0_BASE + PIO_GPIOBASE_OFFSET))
+#define APIO1_GPIOBASE (*(volatile uint32_t *)(PIO1_BASE + PIO_GPIOBASE_OFFSET))
+#define APIO2_GPIOBASE (*(volatile uint32_t *)(PIO2_BASE + PIO_GPIOBASE_OFFSET))
 
 // Macros for PIO control registers
 #define APIO_CTRL_SM_ENABLE(X)      ((X & 0xf) << 0)
