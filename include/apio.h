@@ -513,7 +513,7 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 #define APIO_JMP_PIN(X)              (0x00C0 | ((X) & 0x1F))
 
 // Jump to label if the OSR is not empty
-#define APIO_JMP_NOT_OSRE            (0x00E0)
+#define APIO_JMP_NOT_OSRE(X)         (0x00E0 | ((X) & 0x1F))
 
 // Set the output pin values to 0 (low)
 #define APIO_MOV_PINS_NULL           0xA003
