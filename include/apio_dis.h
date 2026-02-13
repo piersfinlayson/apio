@@ -134,7 +134,7 @@ static const char* piorom_get_in_source(uint8_t src) {
         case 0b101: return "reserved";  // LCOV_EXCL_LINE
         case 0b110: return "isr";
         case 0b111: return "osr";
-        default: return "???";
+        default: return "???";  // LCOV_EXCL_LINE
     }
 }
 
