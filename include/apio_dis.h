@@ -102,7 +102,7 @@ void apio_log_sm(
 
 static const char* piorom_get_jmp_condition(uint8_t cond) {
     switch (cond) {
-        case 0b000: return "";
+        case 0b000: return "";  // LCOV_EXCL_LINE
         case 0b001: return "!x";
         case 0b010: return "x--";
         case 0b011: return "!y";
