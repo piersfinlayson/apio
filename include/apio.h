@@ -580,12 +580,14 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 #define APIO_MOV_PINS_X              0xA001
 #define APIO_MOV_PINS_Y              0xA002
 #define APIO_MOV_PINS_NULL           0xA003
+#define APIO_MOV_PINS_STATUS         0xA005
 #define APIO_MOV_PINS_ISR            0xA006
 #define APIO_MOV_PINS_OSR            0xA007
 
 // MOV to X
 #define APIO_MOV_X_PINS              0xA020
 #define APIO_MOV_X_X                 0xA021
+#define APIO_MOV_X_STATUS            0xA025
 #define APIO_MOV_X_Y                 0xA022
 #define APIO_MOV_X_NULL              0xA023
 #define APIO_MOV_X_ISR               0xA026
@@ -596,6 +598,7 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 #define APIO_MOV_Y_X                 0xA041
 #define APIO_MOV_Y_Y                 0xA042
 #define APIO_MOV_Y_NULL              0xA043
+#define APIO_MOV_Y_STATUS            0xA045
 #define APIO_MOV_Y_ISR               0xA046
 #define APIO_MOV_Y_OSR               0xA047
 
@@ -604,6 +607,7 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 #define APIO_MOV_PINDIRS_X           0xA061
 #define APIO_MOV_PINDIRS_Y           0xA062
 #define APIO_MOV_PINDIRS_NULL        0xA063
+#define APIO_MOV_PINDIRS_STATUS      0xA065
 #define APIO_MOV_PINDIRS_ISR         0xA066
 #define APIO_MOV_PINDIRS_OSR         0xA067
 #define APIO_MOV_PINDIRS_NOT_NULL    0xA06B // invert
@@ -613,6 +617,7 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 #define APIO_MOV_EXEC_X              0xA081
 #define APIO_MOV_EXEC_Y              0xA082
 #define APIO_MOV_EXEC_NULL           0xA083
+#define APIO_MOV_EXEC_STATUS         0xA085
 #define APIO_MOV_EXEC_ISR            0xA086
 #define APIO_MOV_EXEC_OSR            0xA087
 
@@ -621,6 +626,7 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 #define APIO_MOV_PC_X                0xA0A1
 #define APIO_MOV_PC_Y                0xA0A2
 #define APIO_MOV_PC_NULL             0xA0A3
+#define APIO_MOV_PC_STATUS           0xA0A5
 #define APIO_MOV_PC_ISR              0xA0A6
 #define APIO_MOV_PC_OSR              0xA0A7
 
@@ -629,6 +635,7 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 #define APIO_MOV_ISR_X               0xA0C1
 #define APIO_MOV_ISR_Y               0xA0C2
 #define APIO_MOV_ISR_NULL            0xA0C3
+#define APIO_MOV_ISR_STATUS          0xA0C5
 #define APIO_MOV_ISR_ISR             0xA0C6
 #define APIO_MOV_ISR_OSR             0xA0C7
 
@@ -637,6 +644,7 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 #define APIO_MOV_OSR_X               0xA0E1
 #define APIO_MOV_OSR_Y               0xA0E2
 #define APIO_MOV_OSR_NULL            0xA0E3
+#define APIO_MOV_OSR_STATUS          0xA0E5
 #define APIO_MOV_OSR_ISR             0xA0E6
 #define APIO_MOV_OSR_OSR             0xA0E7
 

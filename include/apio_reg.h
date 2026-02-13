@@ -152,6 +152,19 @@ typedef struct pio_sm_reg {
 #define APIO_WRAP_TOP_FROM_REG(REG)     (((REG) >> 12) & 0x1F)
 #define APIO_WRAP_BOTTOM_FROM_REG(REG)  (((REG) >> 7) & 0x1F)
 
+// EXECCTRL STATUS_SEL (bits 6:5)
+#define APIO_STATUS_SEL_TXLEVEL     (0x0 << 5)
+#define APIO_STATUS_SEL_RXLEVEL     (0x1 << 5)
+#define APIO_STATUS_SEL_IRQ         (0x2 << 5)
+
+// EXECCTRL STATUS_N (bits 4:0)
+#define APIO_STATUS_N(n)            ((n) & 0x1F)
+
+// STATUS_N named values for IRQ mode
+#define APIO_STATUS_N_IRQ           0x00
+#define APIO_STATUS_N_IRQ_PREVPIO   0x08
+#define APIO_STATUS_N_IRQ_NEXTPIO   0x10
+
 // SHIFTCTRL
 #define APIO_IN_COUNT(X)         (((X) & 0x1F) << 0)
 #define APIO_AUTOPUSH            (1 << 16)
