@@ -488,6 +488,12 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 // Add a side set delay from 0-31 cycles to an instruction
 #define APIO_ADD_DELAY(INST, DELAY)  ((INST) | (((DELAY) & 0x1F) << 8))
 
+// Apply invert (bitwise NOT) to a MOV instruction's source
+#define APIO_MOV_SRC_INVERT(INST)     ((INST) | (0b01 << 3))
+
+// Apply bit-reverse to a MOV instruction's source
+#define APIO_MOV_SRC_REVERSE(INST)    ((INST) | (0b10 << 3))
+
 // Move the pins value to the ISR
 #define APIO_IN_PINS(NUM)            (0x4000 | ((NUM) & 0x1F))
 
@@ -569,23 +575,70 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 // Jump to label if the OSR is not empty
 #define APIO_JMP_NOT_OSRE(X)         (0x00E0 | ((X) & 0x1F))
 
-// Set the output pin values to 0 (low)
+// MOV to PINS (uses OUT pin mapping)
+#define APIO_MOV_PINS_PINS           0xA000
+#define APIO_MOV_PINS_X              0xA001
+#define APIO_MOV_PINS_Y              0xA002
 #define APIO_MOV_PINS_NULL           0xA003
+#define APIO_MOV_PINS_ISR            0xA006
+#define APIO_MOV_PINS_OSR            0xA007
 
-// Move the pin values to the X register
+// MOV to X
 #define APIO_MOV_X_PINS              0xA020
-
-// Move the OSR into the X register
+#define APIO_MOV_X_X                 0xA021
+#define APIO_MOV_X_Y                 0xA022
+#define APIO_MOV_X_NULL              0xA023
+#define APIO_MOV_X_ISR               0xA026
 #define APIO_MOV_X_OSR               0xA027
 
-// Set the output pin directions to 0 (inputs)
+// MOV to Y
+#define APIO_MOV_Y_PINS              0xA040
+#define APIO_MOV_Y_X                 0xA041
+#define APIO_MOV_Y_Y                 0xA042
+#define APIO_MOV_Y_NULL              0xA043
+#define APIO_MOV_Y_ISR               0xA046
+#define APIO_MOV_Y_OSR               0xA047
+
+// MOV to PINDIRS (uses OUT pin mapping)
+#define APIO_MOV_PINDIRS_PINS        0xA060
+#define APIO_MOV_PINDIRS_X           0xA061
+#define APIO_MOV_PINDIRS_Y           0xA062
 #define APIO_MOV_PINDIRS_NULL        0xA063
+#define APIO_MOV_PINDIRS_ISR         0xA066
+#define APIO_MOV_PINDIRS_OSR         0xA067
+#define APIO_MOV_PINDIRS_NOT_NULL    0xA06B // invert
 
-// Set the output pin directions to 1 (outputs)
-#define APIO_MOV_PINDIRS_NOT_NULL    0xA06B
+// MOV to EXEC (executes source as instruction next cycle)
+#define APIO_MOV_EXEC_PINS           0xA080
+#define APIO_MOV_EXEC_X              0xA081
+#define APIO_MOV_EXEC_Y              0xA082
+#define APIO_MOV_EXEC_NULL           0xA083
+#define APIO_MOV_EXEC_ISR            0xA086
+#define APIO_MOV_EXEC_OSR            0xA087
 
-// Move the pin values to the ISR
+// MOV to PC (unconditional jump)
+#define APIO_MOV_PC_PINS             0xA0A0
+#define APIO_MOV_PC_X                0xA0A1
+#define APIO_MOV_PC_Y                0xA0A2
+#define APIO_MOV_PC_NULL             0xA0A3
+#define APIO_MOV_PC_ISR              0xA0A6
+#define APIO_MOV_PC_OSR              0xA0A7
+
+// MOV to ISR (resets input shift counter to 0)
 #define APIO_MOV_ISR_PINS            0xA0C0
+#define APIO_MOV_ISR_X               0xA0C1
+#define APIO_MOV_ISR_Y               0xA0C2
+#define APIO_MOV_ISR_NULL            0xA0C3
+#define APIO_MOV_ISR_ISR             0xA0C6
+#define APIO_MOV_ISR_OSR             0xA0C7
+
+// MOV to OSR (resets output shift counter to 0)
+#define APIO_MOV_OSR_PINS            0xA0E0
+#define APIO_MOV_OSR_X               0xA0E1
+#define APIO_MOV_OSR_Y               0xA0E2
+#define APIO_MOV_OSR_NULL            0xA0E3
+#define APIO_MOV_OSR_ISR             0xA0E6
+#define APIO_MOV_OSR_OSR             0xA0E7
 
 // No operation (move Y to Y)
 #define APIO_NOP                     0xA042
