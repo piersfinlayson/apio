@@ -110,7 +110,7 @@ static const char* piorom_get_jmp_condition(uint8_t cond) {
         case 0b101: return "x!=y";
         case 0b110: return "pin";
         case 0b111: return "!osre";
-        default: return "???";
+        default: return "???";  // LCOV_EXCL_LINE
     }
 }
 
@@ -120,7 +120,7 @@ static const char* piorom_get_wait_source(uint8_t src) {
         case 0b01: return "pin";
         case 0b10: return "irq";
         case 0b11: return "jmppin";
-        default: return "???";
+        default: return "???";  // LCOV_EXCL_LINE
     }
 }
 
@@ -130,8 +130,8 @@ static const char* piorom_get_in_source(uint8_t src) {
         case 0b001: return "x";
         case 0b010: return "y";
         case 0b011: return "null";
-        case 0b100: return "reserved";
-        case 0b101: return "reserved";
+        case 0b100: return "reserved";  // LCOV_EXCL_LINE
+        case 0b101: return "reserved";  // LCOV_EXCL_LINE
         case 0b110: return "isr";
         case 0b111: return "osr";
         default: return "???";
@@ -148,7 +148,7 @@ static const char* piorom_get_out_dest(uint8_t dest) {
         case 0b101: return "pc";
         case 0b110: return "isr";
         case 0b111: return "exec";
-        default: return "???";
+        default: return "???";  // LCOV_EXCL_LINE
     }
 }
 
@@ -162,7 +162,7 @@ static const char* piorom_get_mov_dest(uint8_t dest) {
         case 0b101: return "pc";
         case 0b110: return "isr";
         case 0b111: return "osr";
-        default: return "???";
+        default: return "???";  // LCOV_EXCL_LINE
     }
 }
 
@@ -171,8 +171,8 @@ static const char* piorom_get_mov_op(uint8_t op) {
         case 0b00: return "";
         case 0b01: return "~";
         case 0b10: return "::";
-        case 0b11: return "reserved";
-        default: return "???";
+        case 0b11: return "reserved";  // LCOV_EXCL_LINE
+        default: return "???";  // LCOV_EXCL_LINE
     }
 }
 
@@ -182,11 +182,11 @@ static const char* piorom_get_mov_source(uint8_t src) {
         case 0b001: return "x";
         case 0b010: return "y";
         case 0b011: return "null";
-        case 0b100: return "reserved";
+        case 0b100: return "reserved";  // LCOV_EXCL_LINE
         case 0b101: return "status";
         case 0b110: return "isr";
         case 0b111: return "osr";
-        default: return "???";
+        default: return "???";  // LCOV_EXCL_LINE
     }
 }
 
@@ -195,12 +195,12 @@ static const char* piorom_get_set_dest(uint8_t dest) {
         case 0b000: return "pins";
         case 0b001: return "x";
         case 0b010: return "y";
-        case 0b011: return "reserved";
+        case 0b011: return "reserved";  // LCOV_EXCL_LINE
         case 0b100: return "pindirs";
-        case 0b101: return "reserved";
-        case 0b110: return "reserved";
-        case 0b111: return "reserved";
-        default: return "???";
+        case 0b101: return "reserved";  // LCOV_EXCL_LINE
+        case 0b110: return "reserved";  // LCOV_EXCL_LINE
+        case 0b111: return "reserved";  // LCOV_EXCL_LINE
+        default: return "???";  // LCOV_EXCL_LINE
     }
 }
 
