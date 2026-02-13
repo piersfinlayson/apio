@@ -71,6 +71,7 @@ CLKDIV: 15000.00 EXECCTRL: 0x00002080 SHIFTCTRL: 0x00000000 PINCTRL: 0x04000000
 - Pico SDK not required, supports fully bare metal programs.
 - Disassembler can decode and dump programs at runtime for debugging and verification.
 - Integrates with [`epio`](https://github.com/piersfinlayson/epio) for seamless PIO program emulation on non-RP2350 hosts, including CI runners.
+- `apio` emulation mode is comprehensively tested by `epio`'s test suite, which includes hundreds of PIO programs covering all instructions and features.
 
 ## Requirements
 
