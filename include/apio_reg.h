@@ -110,9 +110,9 @@ typedef struct pio_sm_reg {
 #define APIO0_INPUT_SYNC_BYPASS  (*(volatile uint32_t *)(APIO0_BASE + APIO_INPUT_SYNC_BYPASS_OFFSET))
 #define APIO1_INPUT_SYNC_BYPASS  (*(volatile uint32_t *)(APIO1_BASE + APIO_INPUT_SYNC_BYPASS_OFFSET))
 #define APIO2_INPUT_SYNC_BYPASS  (*(volatile uint32_t *)(APIO2_BASE + APIO_INPUT_SYNC_BYPASS_OFFSET))
-#define APIO0_GPIOBASE (*(volatile uint32_t *)(PIO0_BASE + PIO_GPIOBASE_OFFSET))
-#define APIO1_GPIOBASE (*(volatile uint32_t *)(PIO1_BASE + PIO_GPIOBASE_OFFSET))
-#define APIO2_GPIOBASE (*(volatile uint32_t *)(PIO2_BASE + PIO_GPIOBASE_OFFSET))
+#define APIO0_GPIOBASE (*(volatile uint32_t *)(APIO0_BASE + APIO_GPIOBASE_OFFSET))
+#define APIO1_GPIOBASE (*(volatile uint32_t *)(APIO1_BASE + APIO_GPIOBASE_OFFSET))
+#define APIO2_GPIOBASE (*(volatile uint32_t *)(APIO2_BASE + APIO_GPIOBASE_OFFSET))
 
 // GPIOBASE
 #define APIO_GPIOBASE_VAL_0     (0)
