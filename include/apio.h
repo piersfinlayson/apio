@@ -132,8 +132,8 @@ typedef struct {
     uint32_t gpio_base[APIO_MAX_PIO_BLOCKS];
 } _apio_emulated_pio_t;
 typedef struct {
-    int8_t output_block[MAX_USED_GPIOS];
-    uint8_t inverted[MAX_USED_GPIOS];
+    int8_t output_block[APIO_MAX_GPIO];
+    uint8_t inverted[APIO_MAX_GPIO];
 } _apio_emulated_gpio_t;
 extern _apio_emulated_pio_t _apio_emulated_pio;
 extern _apio_emulated_gpio_t _apio_emulated_gpios;
