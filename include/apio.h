@@ -103,6 +103,7 @@
 #define APIO_MAX_SMS_PER_BLOCK   4
 #define APIO_MAX_PIO_BLOCKS      3
 #define APIO_MAX_FIFO_DEPTH      4
+#define APIO_MAX_GPIOS           48
 
 #if defined(APIO_EMULATION)
 #define MAX_PRE_INSTRS   16
@@ -130,7 +131,12 @@ typedef struct {
     uint8_t pios_enabled;
     uint32_t gpio_base[APIO_MAX_PIO_BLOCKS];
 } _apio_emulated_pio_t;
+typedef struct {
+    int8_t output_block[MAX_USED_GPIOS];
+    uint8_t inverted[MAX_USED_GPIOS];
+} _apio_emulated_gpio_t;
 extern _apio_emulated_pio_t _apio_emulated_pio;
+extern _apio_emulated_gpio_t _apio_emulated_gpios;
 #define __blk  _apio_emulated_pio.block
 #define __sm   _apio_emulated_pio.sm
 #define __pio_start   _apio_emulated_pio.start
@@ -178,7 +184,12 @@ _apio_emulated_pio_t _apio_emulated_pio = {
     .block = 0xFF,
     .sm = 0xFF,
     .block_ended = {0xFF},
-    .pios_enabled = 0xFF
+    .pios_enabled = 0xFF,
+    .gpio_base = {0xFFFFFFFF}
+};
+_apio_emulated_gpio_t _apio_emulated_gpios = {
+    .output_block = {-1},
+    .inverted = {0}
 };
 #endif // APIO_EMU_NO_IMPL
 #endif // APIO_EMULATION
@@ -220,6 +231,8 @@ _apio_emulated_pio_t _apio_emulated_pio = {
 // Configure a GPIO for (output) usage by a PIO block.  Also disables the
 // pad's isolation setting and any pad output disable.
 #if !defined(APIO_EMULATION)
+_Static_assert(APIO_GPIO_CTRL_FUNC_PIO1 == (APIO_GPIO_CTRL_FUNC_PIO0 + 1), "APIO_GPIO_CTRL_FUNC_PIO1 must be APIO_GPIO_CTRL_FUNC_PIO0 + 1");
+_Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO_GPIO_CTRL_FUNC_PIO2 must be APIO_GPIO_CTRL_FUNC_PIO0 + 2");
 #define APIO_GPIO_OUTPUT(PIN, BLOCK) \
                             do { \
                                 _STATIC_BLOCK_ASSERT(BLOCK); \
@@ -227,7 +240,22 @@ _apio_emulated_pio_t _apio_emulated_pio = {
                                 APIO_GPIO_PAD(PIN) &= ~(APIO_PAD_ISO_BIT | APIO_PAD_OUTPUT_DIS_BIT); \
                             } while(0)
 #else // APIO_EMULATION
-#define APIO_GPIO_OUTPUT(PIN, BLOCK)
+#define APIO_GPIO_OUTPUT(PIN, BLOCK) do { \
+                                _STATIC_BLOCK_ASSERT(BLOCK); \
+                                _apio_emulated_gpios.output_block[PIN] = BLOCK; \
+                            } while(0)
+#endif // !APIO_EMULATION
+
+// Invert a GPIO pin
+#if !defined(APIO_EMULATION)
+#define APIO_GPIO_INVERT(PIN) do { \
+                                    APIO_GPIO_CTRL(PIN) &= APIO_GPIO_CTRL_INOVER_MASK; \
+                                    APIO_GPIO_CTRL(PIN) |= APIO_GPIO_CTRL_INOVER_INVERT; \
+                                } while(0)
+#else // APIO_EMULATION
+#define APIO_GPIO_INVERT(PIN) do { \
+                                    _apio_emulated_gpios.inverted[PIN] = 1; \
+                                } while(0)
 #endif // !APIO_EMULATION
 
 // Clears IRQs for the specified PIO block
@@ -274,6 +302,19 @@ _apio_emulated_pio_t _apio_emulated_pio = {
 #define APIO_ASM_INIT() uint8_t _pios_enabled = _apio_emulated_pio.pios_enabled; \
                         _apio_emulated_pio = (_apio_emulated_pio_t){0};                    \
                         _apio_emulated_pio.pios_enabled = _pios_enabled
+#endif // !APIO_EMULATION
+
+// Call before using APIO GPIO macros
+#if !defined(APIO_EMULATION)
+#define APIO_GPIO_INIT()
+#else // APIO_EMULATION
+#define APIO_GPIO_INIT() do \
+                            { \
+                                for (int __i = 0; __i < APIO_MAX_GPIOS; __i++) { \
+                                    _apio_emulated_gpios.output_block[__i] = -1; \
+                                    _apio_emulated_gpios.inverted[__i] = 0; \
+                                } \
+                            } while(0)
 #endif // !APIO_EMULATION
 
 // Assert these, as if they change, the above stack space calculation must be updated.

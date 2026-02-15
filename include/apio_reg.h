@@ -59,7 +59,9 @@ typedef struct pio_sm_reg {
 #define APIO_RESET_PIO0             (1 << 11)
 #define APIO_RESET_PIO1             (1 << 12)
 #define APIO_RESET_PIO2             (1 << 13)
-#define APIO_GPIO_CTRL_FUNC_PIO0    0x06  // PIO1 = 7, PIO2 = 8
+#define APIO_GPIO_CTRL_FUNC_PIO0    0x06
+#define APIO_GPIO_CTRL_FUNC_PIO1    0x07
+#define APIO_GPIO_CTRL_FUNC_PIO2    0x08
 #define APIO_GPIO_CTRL_OFFSET       0x004
 #define APIO_GPIO_SPACING           0x008
 #define APIO_GPIO_CTRL(pin)         (*(volatile uint32_t*)(APIO_IO_BANK0_BASE + APIO_GPIO_CTRL_OFFSET + (pin)*APIO_GPIO_SPACING))
@@ -68,6 +70,10 @@ typedef struct pio_sm_reg {
 #define APIO_PAD_ISO_BIT            (1 << 8)
 #define APIO_PAD_OUTPUT_DIS_BIT     (1 << 7)
 #define APIO_GPIO_PAD(pin)          (*(volatile uint32_t*)(APIO_PADS_BANK0_BASE + APIO_PAD_OFFSET_START + pin*APIO_PAD_SPACING))  
+#define APIO_GPIO_CTRL_INOVER_INVERT (0b01 << 16)
+#define APIO_GPIO_CTRL_INOVER_LOW    (0b10 << 16)
+#define APIO_GPIO_CTRL_INOVER_HIGH   (0b11 << 16)
+#define APIO_GPIO_CTRL_INOVER_MASK   (0b11 << 16)
 
 // PIO register offsets
 #define APIO_CTRL_OFFSET                (0x00)
@@ -113,6 +119,12 @@ typedef struct pio_sm_reg {
 #define APIO0_GPIOBASE (*(volatile uint32_t *)(APIO0_BASE + APIO_GPIOBASE_OFFSET))
 #define APIO1_GPIOBASE (*(volatile uint32_t *)(APIO1_BASE + APIO_GPIOBASE_OFFSET))
 #define APIO2_GPIOBASE (*(volatile uint32_t *)(APIO2_BASE + APIO_GPIOBASE_OFFSET))
+
+// GPIO masks
+#define APIO_GPIO_CTRL_INOVER_INVERT (0b01 << 16)
+#define APIO_GPIO_CTRL_INOVER_LOW    (0b10 << 16)
+#define APIO_GPIO_CTRL_INOVER_HIGH   (0b11 << 16)
+#define APIO_GPIO_CTRL_INOVER_MASK   (0b11 << 16)
 
 // GPIOBASE
 #define APIO_GPIOBASE_VAL_0     (0)
