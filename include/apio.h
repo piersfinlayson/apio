@@ -188,7 +188,7 @@ _apio_emulated_pio_t _apio_emulated_pio = {
     .gpio_base = {0xFFFFFFFF}
 };
 _apio_emulated_gpio_t _apio_emulated_gpios = {
-    .output_block = {-1},
+    .output_block = {[0 ... 47] = -1},
     .inverted = {0}
 };
 #endif // APIO_EMU_NO_IMPL
