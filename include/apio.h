@@ -134,6 +134,8 @@ typedef struct {
 typedef struct {
     int8_t output_block[APIO_MAX_GPIOS];
     uint8_t inverted[APIO_MAX_GPIOS];
+    uint8_t force_input_low[APIO_MAX_GPIOS];
+    uint8_t force_input_high[APIO_MAX_GPIOS];
 } _apio_emulated_gpio_t;
 extern _apio_emulated_pio_t _apio_emulated_pio;
 extern _apio_emulated_gpio_t _apio_emulated_gpios;
@@ -189,7 +191,9 @@ _apio_emulated_pio_t _apio_emulated_pio = {
 };
 _apio_emulated_gpio_t _apio_emulated_gpios = {
     .output_block = {[0 ... 47] = -1},
-    .inverted = {0}
+    .inverted = {0},
+    .force_input_low = {0},
+    .force_input_high = {0}
 };
 #endif // APIO_EMU_NO_IMPL
 #endif // APIO_EMULATION
@@ -248,13 +252,33 @@ _Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO
 
 // Invert a GPIO pin
 #if !defined(APIO_EMULATION)
-#define APIO_GPIO_INVERT(PIN) do { \
+#define APIO_GPIO_INPUT_INVERT(PIN) do { \
                                     APIO_GPIO_CTRL(PIN) &= APIO_GPIO_CTRL_INOVER_MASK; \
                                     APIO_GPIO_CTRL(PIN) |= APIO_GPIO_CTRL_INOVER_INVERT; \
                                 } while(0)
+#define APIO_GPIO_FORCE_INPUT_LOW(PIN)  do { \
+                                    APIO_GPIO_CTRL(PIN) &= APIO_GPIO_CTRL_INOVER_MASK; \
+                                    APIO_GPIO_CTRL(PIN) |= APIO_GPIO_CTRL_INOVER_LOW; \
+                                } while(0)
+#define APIO_GPIO_FORCE_INPUT_HIGH(PIN)  do { \
+                                    APIO_GPIO_CTRL(PIN) &= APIO_GPIO_CTRL_INOVER_MASK; \
+                                    APIO_GPIO_CTRL(PIN) |= APIO_GPIO_CTRL_INOVER_HIGH; \
+                                } while(0)
 #else // APIO_EMULATION
-#define APIO_GPIO_INVERT(PIN) do { \
+#define APIO_GPIO_INPUT_INVERT(PIN) do { \
                                     _apio_emulated_gpios.inverted[PIN] = 1; \
+                                    _apio_emulated_gpios.force_input_high[PIN] = 0; \
+                                    _apio_emulated_gpios.force_input_low[PIN] = 0; \
+                                } while(0)
+#define APIO_GPIO_FORCE_INPUT_LOW(PIN)  do { \
+                                    _apio_emulated_gpios.inverted[PIN] = 0; \
+                                    _apio_emulated_gpios.force_input_high[PIN] = 0; \
+                                    _apio_emulated_gpios.force_input_low[PIN] = 1; \
+                                } while(0)
+#define APIO_GPIO_FORCE_INPUT_HIGH(PIN)  do { \
+                                    _apio_emulated_gpios.inverted[PIN] = 0; \
+                                    _apio_emulated_gpios.force_input_low[PIN] = 0; \
+                                    _apio_emulated_gpios.force_input_high[PIN] = 1; \
                                 } while(0)
 #endif // !APIO_EMULATION
 
@@ -313,6 +337,8 @@ _Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO
                                 for (int __i = 0; __i < APIO_MAX_GPIOS; __i++) { \
                                     _apio_emulated_gpios.output_block[__i] = -1; \
                                     _apio_emulated_gpios.inverted[__i] = 0; \
+                                    _apio_emulated_gpios.force_input_low[__i] = 0; \
+                                    _apio_emulated_gpios.force_input_high[__i] = 0; \
                                 } \
                             } while(0)
 #endif // !APIO_EMULATION
