@@ -253,15 +253,15 @@ _Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO
 // Invert a GPIO pin
 #if !defined(APIO_EMULATION)
 #define APIO_GPIO_INPUT_INVERT(PIN) do { \
-                                    APIO_GPIO_CTRL(PIN) &= APIO_GPIO_CTRL_INOVER_MASK; \
+                                    APIO_GPIO_CTRL(PIN) &= ~APIO_GPIO_CTRL_INOVER_MASK; \
                                     APIO_GPIO_CTRL(PIN) |= APIO_GPIO_CTRL_INOVER_INVERT; \
                                 } while(0)
 #define APIO_GPIO_FORCE_INPUT_LOW(PIN)  do { \
-                                    APIO_GPIO_CTRL(PIN) &= APIO_GPIO_CTRL_INOVER_MASK; \
+                                    APIO_GPIO_CTRL(PIN) &= ~APIO_GPIO_CTRL_INOVER_MASK; \
                                     APIO_GPIO_CTRL(PIN) |= APIO_GPIO_CTRL_INOVER_LOW; \
                                 } while(0)
 #define APIO_GPIO_FORCE_INPUT_HIGH(PIN)  do { \
-                                    APIO_GPIO_CTRL(PIN) &= APIO_GPIO_CTRL_INOVER_MASK; \
+                                    APIO_GPIO_CTRL(PIN) &= ~APIO_GPIO_CTRL_INOVER_MASK; \
                                     APIO_GPIO_CTRL(PIN) |= APIO_GPIO_CTRL_INOVER_HIGH; \
                                 } while(0)
 #else // APIO_EMULATION
