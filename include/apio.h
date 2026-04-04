@@ -313,13 +313,13 @@ _Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO
 // Uses around 128 bytes of stack space in RP2350 hardware case.
 #if !defined(APIO_EMULATION)
 #define APIO_ASM_INIT()  \
-    uint16_t instr_scratch[APIO_MAX_PIO_INSTRS]; \
+    uint16_t __attribute__((unused)) instr_scratch[APIO_MAX_PIO_INSTRS]; \
     uint8_t __attribute__((unused)) __pio_first_instr[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK] = _OFFSET_ARRAY_INIT; \
-    uint8_t __pio_start[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK] = _OFFSET_ARRAY_INIT; \
-    uint8_t __pio_wrap_bottom[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK] = _OFFSET_ARRAY_INIT; \
-    uint8_t __pio_wrap_top[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK] = _OFFSET_ARRAY_INIT; \
+    uint8_t __attribute__((unused)) __pio_start[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK] = _OFFSET_ARRAY_INIT; \
+    uint8_t __attribute__((unused)) __pio_wrap_bottom[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK] = _OFFSET_ARRAY_INIT; \
+    uint8_t __attribute__((unused)) __pio_wrap_top[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK] = _OFFSET_ARRAY_INIT; \
     uint8_t __attribute__((unused)) __pio_end[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK] = _OFFSET_ARRAY_INIT; \
-    uint8_t __pio_offset[APIO_MAX_PIO_BLOCKS] = {0, 0, 0}; \
+    uint8_t __attribute__((unused)) __pio_offset[APIO_MAX_PIO_BLOCKS] = {0, 0, 0}; \
     uint8_t __blk = 0; \
     uint8_t __sm = 0
 #else // APIO_EMULATION
