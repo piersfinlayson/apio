@@ -373,18 +373,33 @@ _Static_assert((APIO_MAX_PIO_INSTRS == 32), "APIO_MAX_PIO_INSTRS must be 32");
 #define APIO_ENABLE_SMS(BLOCK, SMS_MASK)    _apio_emulated_pio.enabled_sms[BLOCK] = SMS_MASK
 #endif // !APIO_EMULATION
 
-// Set the current PIO block
-#define APIO_SET_BLOCK(BLOCK)   _STATIC_BLOCK_ASSERT(BLOCK); \
-                                __blk = BLOCK
+// Set the current PIO block where the block number is a runtime variable
+#define APIO_SET_BLOCK_VAR(BLOCK)               __blk = (BLOCK)
 
-// Set the current PIO SM
-#define APIO_SET_SM(SM)         _STATIC_SM_ASSERT(SM);                                   \
-                                __sm = SM;                                              \
+// Set the current PIO block
+#define APIO_SET_BLOCK(BLOCK)                   _STATIC_BLOCK_ASSERT(BLOCK); \
+                                                APIO_SET_BLOCK_VAR(BLOCK)
+
+// Resume building a previously committed block from a known instruction
+// offset, where the block number is a runtime variable
+#define APIO_SET_BLOCK_FROM_VAR(BLOCK, OFFSET)  APIO_SET_BLOCK_VAR(BLOCK); \
+                                                __pio_offset[__blk] = (OFFSET)
+
+// Resume building a previously committed block from a known instruction offset
+#define APIO_SET_BLOCK_FROM(BLOCK, OFFSET)      _STATIC_BLOCK_ASSERT(BLOCK); \
+                                                APIO_SET_BLOCK_FROM_VAR(BLOCK, OFFSET)
+
+// Set the current PIO SM using an SM variable
+#define APIO_SET_SM_VAR(SM)     __sm = (SM);                                            \
                                 __pio_first_instr[__blk][__sm] = __pio_offset[__blk];   \
                                 __pio_start[__blk][__sm] = __pio_offset[__blk];         \
                                 __pio_wrap_bottom[__blk][__sm] = __pio_offset[__blk];   \
                                 __pio_wrap_top[__blk][__sm] = __pio_offset[__blk];      \
                                 __pio_end[__blk][__sm] = __pio_offset[__blk]
+
+// Set the current PIO SM
+#define APIO_SET_SM(SM)         _STATIC_SM_ASSERT(SM); \
+                                APIO_SET_SM_VAR(SM)
 
 // Use a label as a destination for JMPs
 #define APIO_LABEL(NAME)        __pio_label__##NAME
@@ -401,6 +416,9 @@ _Static_assert((APIO_MAX_PIO_INSTRS == 32), "APIO_MAX_PIO_INSTRS must be 32");
 
 // Get a label representing the start of the current PIO program
 #define APIO_START_LABEL()      __pio_start[__blk][__sm]
+
+// Returns the number of instructions stored for the current PIO block.
+#define APIO_INSTR_COUNT()  (__pio_offset[__blk])
 
 // Set the end offset within a PIO program - call before `APIO_ADD_INSTR()`
 // for the last instruction.  Must be called after `APIO_WRAP_TOP()`.  If
@@ -497,19 +515,23 @@ static inline volatile uint32_t* _apio_instr_mem_ptr(uint8_t block) {
 }
 #endif // !APIO_EMULATION
 
+// Commits only the instructions added since APIO_SET_BLOCK_FROM(), leaving
+// previously committed instructions in PIO memory untouched.
+#if !defined(APIO_EMULATION)
+#define APIO_END_BLOCK_FROM(OFFSET) do { \
+                            volatile uint32_t* ptr = _apio_instr_mem_ptr(__blk);        \
+                            for (int ii = (OFFSET); ii < __pio_offset[__blk]; ii++) {   \
+                                ptr[ii] = instr_scratch[ii];                            \
+                            }                                                           \
+                        } while(0)
+#else
+#define APIO_END_BLOCK_FROM(OFFSET) _apio_emulated_pio.max_offset[__blk] = __pio_offset[__blk]
+#endif
+
 // Write the constructed PIO programs to the PIO instruction memory for the
 // current PIO block.  Call after all SMs for this block have been built,
 // before enabling.
-#if !defined(APIO_EMULATION)
-#define APIO_END_BLOCK() do { \
-                            volatile uint32_t* ptr = _apio_instr_mem_ptr(__blk);    \
-                            for (int ii = 0; ii < __pio_offset[__blk]; ii++) {    \
-                                 ptr[ii] = instr_scratch[ii];                        \
-                            }                                                       \
-                        } while(0)
-#else // APIO_EMULATION
-#define APIO_END_BLOCK() _apio_emulated_pio.max_offset[__blk] = __pio_offset[__blk]
-#endif // !APIO_EMULATION
+#define APIO_END_BLOCK() APIO_END_BLOCK_FROM(0)
 
 // Call to enable one or more SMs within a PIO block.  To enable more than SM
 // simultaneously, OR the SM numbers together (e.g. to enable SM0 and SM2, use
