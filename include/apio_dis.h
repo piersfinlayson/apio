@@ -204,6 +204,18 @@ static const char* piorom_get_set_dest(uint8_t dest) {
     }
 }
 
+// Returns the name for an EXECCTRL STATUS_SEL value.
+// sel is APIO_EXECCTRL_STATUS_SEL_FROM_REG(execctrl), i.e. (reg >> 5) & 0x3,
+// matching APIO_STATUS_SEL_{TXLEVEL,RXLEVEL,IRQ} >> 5.
+static const char* apio_get_status_sel_str(uint8_t sel) {
+    switch (sel) {
+        case 0: return "TXLEVEL";  // APIO_STATUS_SEL_TXLEVEL >> 5
+        case 1: return "RXLEVEL";  // APIO_STATUS_SEL_RXLEVEL >> 5
+        case 2: return "IRQ";      // APIO_STATUS_SEL_IRQ     >> 5
+        default: return "???";
+    }
+}
+
 static char* append_str(char* dest, const char* src) {
     while (*src) {
         *dest++ = *src++;
@@ -480,7 +492,6 @@ void apio_log_sm(
     uint8_t start,
     uint8_t end
 ) {
-    (void)sm_name;   // Unused in some configurations, avoid warnings
     volatile pio_sm_reg_t *sm_reg;
     char instr[64];
     
@@ -493,23 +504,72 @@ void apio_log_sm(
         sm_reg = APIO2_SM_REG(pio_sm);
     }
 
-    uint16_t clkdiv_int = APIO_CLKDIV_INT_FROM_REG(sm_reg->clkdiv);
-    uint8_t clkdiv_frac = APIO_CLKDIV_FRAC_FROM_REG(sm_reg->clkdiv);
-    (void)clkdiv_int;   // Unused in some configurations, avoid warnings
-    (void)clkdiv_frac;  // Unused in some configurations, avoid warnings
-    uint8_t wrap_bottom = APIO_WRAP_BOTTOM_FROM_REG(sm_reg->execctrl);
-    uint8_t wrap_top = APIO_WRAP_TOP_FROM_REG(sm_reg->execctrl);
+    uint16_t clkdiv_int  = APIO_CLKDIV_INT_FROM_REG(sm_reg->clkdiv);
+    uint8_t  clkdiv_frac = APIO_CLKDIV_FRAC_FROM_REG(sm_reg->clkdiv);
+    uint8_t  wrap_bottom = APIO_WRAP_BOTTOM_FROM_REG(sm_reg->execctrl);
+    uint8_t  wrap_top    = APIO_WRAP_TOP_FROM_REG(sm_reg->execctrl);
+
+    uint32_t execctrl  = sm_reg->execctrl;
+    uint32_t shiftctrl = sm_reg->shiftctrl;
+    uint32_t pinctrl   = sm_reg->pinctrl;
+
+    // EXECCTRL fields
+    uint8_t exec_stalled  = (uint8_t)APIO_EXECCTRL_EXEC_STALLED_FROM_REG(execctrl);
+    uint8_t side_en       = (uint8_t)APIO_EXECCTRL_SIDE_EN_FROM_REG(execctrl);
+    uint8_t side_pindir   = (uint8_t)APIO_EXECCTRL_SIDE_PINDIR_FROM_REG(execctrl);
+    uint8_t jmp_pin       = (uint8_t)APIO_EXECCTRL_JMP_PIN_FROM_REG(execctrl);
+    uint8_t out_en_sel    = (uint8_t)APIO_EXECCTRL_OUT_EN_SEL_FROM_REG(execctrl);
+    uint8_t inline_out_en = (uint8_t)APIO_EXECCTRL_INLINE_OUT_EN_FROM_REG(execctrl);
+    uint8_t out_sticky    = (uint8_t)APIO_EXECCTRL_OUT_STICKY_FROM_REG(execctrl);
+    uint8_t status_sel    = (uint8_t)APIO_EXECCTRL_STATUS_SEL_FROM_REG(execctrl);
+    uint8_t status_n      = (uint8_t)APIO_EXECCTRL_STATUS_N_FROM_REG(execctrl);
+
+    // SHIFTCTRL fields
+    // Single-bit fields use the existing mask constants directly
+    uint8_t fjoin_rx     = (uint8_t)APIO_SHIFTCTRL_FJOIN_RX_FROM_REG(shiftctrl);
+    uint8_t fjoin_tx     = (uint8_t)APIO_SHIFTCTRL_FJOIN_TX_FROM_REG(shiftctrl);
+    uint8_t fjoin_rx_put = (uint8_t)APIO_SHIFTCTRL_FJOIN_RX_PUT_FROM_REG(shiftctrl);
+    uint8_t fjoin_rx_get = (uint8_t)APIO_SHIFTCTRL_FJOIN_RX_GET_FROM_REG(shiftctrl);
+    uint8_t autopush     = (shiftctrl & APIO_AUTOPUSH)      ? 1u : 0u;
+    uint8_t autopull     = (shiftctrl & APIO_AUTOPULL)      ? 1u : 0u;
+    uint8_t in_shiftdir  = (shiftctrl & APIO_IN_SHIFTDIR_R) ? 1u : 0u;
+    uint8_t out_shiftdir = (shiftctrl & APIO_OUT_SHIFTDIR_R) ? 1u : 0u;
+    uint8_t push_thresh  = APIO_THRESH32(APIO_PUSH_THRESH_FROM_REG(shiftctrl));
+    uint8_t pull_thresh  = APIO_THRESH32(APIO_PULL_THRESH_FROM_REG(shiftctrl));
+    uint8_t in_count     = APIO_THRESH32(APIO_IN_COUNT_FROM_REG(shiftctrl));
+
+    // PINCTRL fields
+    uint8_t out_base      = (uint8_t)APIO_OUT_BASE_FROM_REG(pinctrl);
+    uint8_t out_count     = (uint8_t)APIO_OUT_COUNT_FROM_REG(pinctrl);
+    uint8_t set_base      = (uint8_t)APIO_SET_BASE_FROM_REG(pinctrl);
+    uint8_t set_count     = (uint8_t)APIO_SET_COUNT_FROM_REG(pinctrl);
+    uint8_t in_base       = (uint8_t)APIO_IN_BASE_FROM_REG(pinctrl);
+    uint8_t sideset_base  = (uint8_t)APIO_SIDE_SET_BASE_FROM_REG(pinctrl);
+    uint8_t sideset_count = (uint8_t)APIO_SIDE_SET_COUNT_FROM_REG(pinctrl);
 
     APIO_LOG("PIO%d:%d %s (%d instructions)", pio_block, pio_sm, sm_name, (end - first_instr + 1));
 
-    APIO_LOG(
-        "  CLKDIV: %d.%02d EXECCTRL: 0x%08X SHIFTCTRL: 0x%08X PINCTRL: 0x%08X",
-        clkdiv_int,
-        clkdiv_frac,
-        sm_reg->execctrl,
-        sm_reg->shiftctrl,
-        sm_reg->pinctrl
-    );
+    APIO_LOG("  CLKDIV: %d.%02d", clkdiv_int, clkdiv_frac);
+
+    APIO_LOG("  EXECCTRL: 0x%08X%s", execctrl, exec_stalled ? " [STALLED]" : "");
+    APIO_LOG("    wrap=%d:%d  side: en=%d pindir=%d  jmp_pin=%d",
+        wrap_bottom, wrap_top, side_en, side_pindir, jmp_pin);
+    APIO_LOG("    out: sticky=%d inline_en=%d en_sel=%d  status: %s<%d",
+        out_sticky, inline_out_en, out_en_sel,
+        apio_get_status_sel_str(status_sel), status_n);
+
+    APIO_LOG("  SHIFTCTRL: 0x%08X", shiftctrl);
+    APIO_LOG("    in:  autopush=%d thresh=%d dir=%c  out: autopull=%d thresh=%d dir=%c",
+        autopush, push_thresh, in_shiftdir  ? 'R' : 'L',
+        autopull, pull_thresh, out_shiftdir ? 'R' : 'L');
+    APIO_LOG("    fjoin: tx=%d rx=%d rx_put=%d rx_get=%d  in_count=%d",
+        fjoin_tx, fjoin_rx, fjoin_rx_put, fjoin_rx_get, in_count);
+
+    APIO_LOG("  PINCTRL: 0x%08X", pinctrl);
+    APIO_LOG("    out: base=%d count=%d  set: base=%d count=%d  in_base=%d",
+        out_base, out_count, set_base, set_count, in_base);
+    APIO_LOG("    side: base=%d count=%d", sideset_base, sideset_count);
+
     APIO_LOG("  .program pio%d_sm%d", pio_block, pio_sm);
     for (int ii = first_instr; ii <= end; ii++) {
         if (ii == start) {
@@ -526,6 +586,6 @@ void apio_log_sm(
     }
 }
 
-#endif // APIO_LOG_ENABLE && APIO_LOG_NO_IMPL
+#endif // APIO_LOG_ENABLE && APIO_LOG_IMPL
 
 #endif // APIO_DIS_H

@@ -197,6 +197,38 @@ typedef struct pio_sm_reg {
 #define APIO_SET_COUNT(X)        (((X) & 0x07) << 26)
 #define APIO_SIDE_SET_COUNT(X)   (((X) & 0x07) << 29)
 
+// EXECCTRL
+#define APIO_EXECCTRL_EXEC_STALLED_FROM_REG(REG)  (((REG) >> 31) & 0x1u)
+#define APIO_EXECCTRL_SIDE_EN_FROM_REG(REG)       (((REG) >> 30) & 0x1u)
+#define APIO_EXECCTRL_SIDE_PINDIR_FROM_REG(REG)   (((REG) >> 29) & 0x1u)
+#define APIO_EXECCTRL_JMP_PIN_FROM_REG(REG)       (((REG) >> 24) & 0x1Fu)
+#define APIO_EXECCTRL_OUT_EN_SEL_FROM_REG(REG)    (((REG) >> 19) & 0x1Fu)
+#define APIO_EXECCTRL_INLINE_OUT_EN_FROM_REG(REG) (((REG) >> 18) & 0x1u)
+#define APIO_EXECCTRL_OUT_STICKY_FROM_REG(REG)    (((REG) >> 17) & 0x1u)
+#define APIO_EXECCTRL_STATUS_SEL_FROM_REG(REG)    (((REG) >>  5) & 0x3u)
+#define APIO_EXECCTRL_STATUS_N_FROM_REG(REG)      ((REG) & 0x1Fu)
+ 
+// SHIFTCTRL
+#define APIO_SHIFTCTRL_FJOIN_RX_FROM_REG(REG)     (((REG) >> 31) & 0x1u)
+#define APIO_SHIFTCTRL_FJOIN_TX_FROM_REG(REG)     (((REG) >> 30) & 0x1u)
+#define APIO_PULL_THRESH_FROM_REG(REG)            (((REG) >> 25) & 0x1Fu)
+#define APIO_PUSH_THRESH_FROM_REG(REG)            (((REG) >> 20) & 0x1Fu)
+#define APIO_SHIFTCTRL_FJOIN_RX_PUT_FROM_REG(REG) (((REG) >> 15) & 0x1u)
+#define APIO_SHIFTCTRL_FJOIN_RX_GET_FROM_REG(REG) (((REG) >> 14) & 0x1u)
+#define APIO_IN_COUNT_FROM_REG(REG)               ((REG) & 0x1Fu)
+ 
+// PINCTRL
+#define APIO_SIDE_SET_COUNT_FROM_REG(REG)  (((REG) >> 29) & 0x7u)
+#define APIO_SET_COUNT_FROM_REG(REG)       (((REG) >> 26) & 0x7u)
+#define APIO_OUT_COUNT_FROM_REG(REG)       (((REG) >> 20) & 0x3Fu)
+#define APIO_IN_BASE_FROM_REG(REG)         (((REG) >> 15) & 0x1Fu)
+#define APIO_SIDE_SET_BASE_FROM_REG(REG)   (((REG) >> 10) & 0x1Fu)
+#define APIO_SET_BASE_FROM_REG(REG)        (((REG) >>  5) & 0x1Fu)
+#define APIO_OUT_BASE_FROM_REG(REG)        ((REG) & 0x1Fu)
+ 
+// PUSH_THRESH, PULL_THRESH and IN_COUNT encode 32 as 0
+#define APIO_THRESH32(x) ((x) ? (uint8_t)(x) : (uint8_t)32)
+
 // Macro to access a PIO state machine RX FIFO entry
 #define APIO0_SM_X_RXF_Y(X, Y)   (*(volatile uint32_t *)(APIO0_BASE + APIO_SM_RXF_OFFSET + ((X) * 0x10) + ((Y) * 4)))
 #define APIO1_SM_X_RXF_Y(X, Y)   (*(volatile uint32_t *)(APIO1_BASE + APIO_SM_RXF_OFFSET + ((X) * 0x10) + ((Y) * 4)))
