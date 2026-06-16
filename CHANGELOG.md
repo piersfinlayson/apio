@@ -28,6 +28,10 @@ Added support for emulating internal GPIO pulls.
   reset defaults: pull-down enabled on all pins, 4 mA drive strength, slow
   slew.
 
+## 2026-06-14
+
+Added register logging to APIO_SM_LOG
+
 ## 2026-06-10
 
 Added APIs:
