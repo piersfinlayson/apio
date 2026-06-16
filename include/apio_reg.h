@@ -59,17 +59,40 @@ typedef struct pio_sm_reg {
 #define APIO_RESET_PIO0             (1 << 11)
 #define APIO_RESET_PIO1             (1 << 12)
 #define APIO_RESET_PIO2             (1 << 13)
+
+// GPIO function select values (FUNCSEL field of GPIO_CTRL)
+#define APIO_GPIO_CTRL_FUNC_SIO     0x05
 #define APIO_GPIO_CTRL_FUNC_PIO0    0x06
 #define APIO_GPIO_CTRL_FUNC_PIO1    0x07
 #define APIO_GPIO_CTRL_FUNC_PIO2    0x08
+
 #define APIO_GPIO_CTRL_OFFSET       0x004
 #define APIO_GPIO_SPACING           0x008
 #define APIO_GPIO_CTRL(pin)         (*(volatile uint32_t*)(APIO_IO_BANK0_BASE + APIO_GPIO_CTRL_OFFSET + (pin)*APIO_GPIO_SPACING))
+
+// Pad register bits
 #define APIO_PAD_OFFSET_START       0x004
 #define APIO_PAD_SPACING            0x004
-#define APIO_PAD_ISO_BIT            (1 << 8)
-#define APIO_PAD_OUTPUT_DIS_BIT     (1 << 7)
-#define APIO_GPIO_PAD(pin)          (*(volatile uint32_t*)(APIO_PADS_BANK0_BASE + APIO_PAD_OFFSET_START + pin*APIO_PAD_SPACING))  
+#define APIO_GPIO_PAD(pin)          (*(volatile uint32_t*)(APIO_PADS_BANK0_BASE + APIO_PAD_OFFSET_START + pin*APIO_PAD_SPACING))
+
+#define APIO_PAD_ISO_BIT            (1 << 8)    // Pad isolation
+#define APIO_PAD_OUTPUT_DIS_BIT     (1 << 7)    // Output disable (OD)
+#define APIO_PAD_INPUT_EN_BIT       (1 << 6)    // Input enable (IE)
+#define APIO_PAD_DRIVE_OFFSET       4
+#define APIO_PAD_DRIVE_MASK         (0x3 << APIO_PAD_DRIVE_OFFSET)
+#define APIO_PAD_DRIVE(x)           (((x) & 0x3) << APIO_PAD_DRIVE_OFFSET)
+#define APIO_PAD_PUE_BIT            (1 << 3)    // Pull-up enable
+#define APIO_PAD_PDE_BIT            (1 << 2)    // Pull-down enable
+#define APIO_PAD_SLEWFAST_BIT       (1 << 0)    // Slew rate fast
+
+// Drive strength values (DRIVE field of pad register, bits 5:4)
+// Hardware reset default is APIO_DRIVE_4MA.
+#define APIO_DRIVE_2MA              0x0
+#define APIO_DRIVE_4MA              0x1
+#define APIO_DRIVE_8MA              0x2
+#define APIO_DRIVE_12MA             0x3
+
+// GPIO CTRL INOVER field
 #define APIO_GPIO_CTRL_INOVER_INVERT (0b01 << 16)
 #define APIO_GPIO_CTRL_INOVER_LOW    (0b10 << 16)
 #define APIO_GPIO_CTRL_INOVER_HIGH   (0b11 << 16)
@@ -119,12 +142,6 @@ typedef struct pio_sm_reg {
 #define APIO0_GPIOBASE (*(volatile uint32_t *)(APIO0_BASE + APIO_GPIOBASE_OFFSET))
 #define APIO1_GPIOBASE (*(volatile uint32_t *)(APIO1_BASE + APIO_GPIOBASE_OFFSET))
 #define APIO2_GPIOBASE (*(volatile uint32_t *)(APIO2_BASE + APIO_GPIOBASE_OFFSET))
-
-// GPIO masks
-#define APIO_GPIO_CTRL_INOVER_INVERT (0b01 << 16)
-#define APIO_GPIO_CTRL_INOVER_LOW    (0b10 << 16)
-#define APIO_GPIO_CTRL_INOVER_HIGH   (0b11 << 16)
-#define APIO_GPIO_CTRL_INOVER_MASK   (0b11 << 16)
 
 // GPIOBASE
 #define APIO_GPIOBASE_VAL_0     (0)
@@ -196,6 +213,38 @@ typedef struct pio_sm_reg {
 #define APIO_OUT_COUNT(X)        (((X) & 0x3F) << 20)
 #define APIO_SET_COUNT(X)        (((X) & 0x07) << 26)
 #define APIO_SIDE_SET_COUNT(X)   (((X) & 0x07) << 29)
+
+// EXECCTRL
+#define APIO_EXECCTRL_EXEC_STALLED_FROM_REG(REG)  (((REG) >> 31) & 0x1u)
+#define APIO_EXECCTRL_SIDE_EN_FROM_REG(REG)       (((REG) >> 30) & 0x1u)
+#define APIO_EXECCTRL_SIDE_PINDIR_FROM_REG(REG)   (((REG) >> 29) & 0x1u)
+#define APIO_EXECCTRL_JMP_PIN_FROM_REG(REG)       (((REG) >> 24) & 0x1Fu)
+#define APIO_EXECCTRL_OUT_EN_SEL_FROM_REG(REG)    (((REG) >> 19) & 0x1Fu)
+#define APIO_EXECCTRL_INLINE_OUT_EN_FROM_REG(REG) (((REG) >> 18) & 0x1u)
+#define APIO_EXECCTRL_OUT_STICKY_FROM_REG(REG)    (((REG) >> 17) & 0x1u)
+#define APIO_EXECCTRL_STATUS_SEL_FROM_REG(REG)    (((REG) >>  5) & 0x3u)
+#define APIO_EXECCTRL_STATUS_N_FROM_REG(REG)      ((REG) & 0x1Fu)
+ 
+// SHIFTCTRL
+#define APIO_SHIFTCTRL_FJOIN_RX_FROM_REG(REG)     (((REG) >> 31) & 0x1u)
+#define APIO_SHIFTCTRL_FJOIN_TX_FROM_REG(REG)     (((REG) >> 30) & 0x1u)
+#define APIO_PULL_THRESH_FROM_REG(REG)            (((REG) >> 25) & 0x1Fu)
+#define APIO_PUSH_THRESH_FROM_REG(REG)            (((REG) >> 20) & 0x1Fu)
+#define APIO_SHIFTCTRL_FJOIN_RX_PUT_FROM_REG(REG) (((REG) >> 15) & 0x1u)
+#define APIO_SHIFTCTRL_FJOIN_RX_GET_FROM_REG(REG) (((REG) >> 14) & 0x1u)
+#define APIO_IN_COUNT_FROM_REG(REG)               ((REG) & 0x1Fu)
+ 
+// PINCTRL
+#define APIO_SIDE_SET_COUNT_FROM_REG(REG)  (((REG) >> 29) & 0x7u)
+#define APIO_SET_COUNT_FROM_REG(REG)       (((REG) >> 26) & 0x7u)
+#define APIO_OUT_COUNT_FROM_REG(REG)       (((REG) >> 20) & 0x3Fu)
+#define APIO_IN_BASE_FROM_REG(REG)         (((REG) >> 15) & 0x1Fu)
+#define APIO_SIDE_SET_BASE_FROM_REG(REG)   (((REG) >> 10) & 0x1Fu)
+#define APIO_SET_BASE_FROM_REG(REG)        (((REG) >>  5) & 0x1Fu)
+#define APIO_OUT_BASE_FROM_REG(REG)        ((REG) & 0x1Fu)
+ 
+// PUSH_THRESH, PULL_THRESH and IN_COUNT encode 32 as 0
+#define APIO_THRESH32(x) ((x) ? (uint8_t)(x) : (uint8_t)32)
 
 // Macro to access a PIO state machine RX FIFO entry
 #define APIO0_SM_X_RXF_Y(X, Y)   (*(volatile uint32_t *)(APIO0_BASE + APIO_SM_RXF_OFFSET + ((X) * 0x10) + ((Y) * 4)))

@@ -105,6 +105,9 @@
 #define APIO_MAX_FIFO_DEPTH      4
 #define APIO_MAX_GPIOS           48
 
+// Bitmask with all APIO_MAX_GPIOS bits set (for default pull-down init)
+#define APIO_GPIO_ALL_MASK  ((1ULL << APIO_MAX_GPIOS) - 1)
+
 #if defined(APIO_EMULATION)
 #define MAX_PRE_INSTRS   16
 typedef struct {
@@ -131,12 +134,24 @@ typedef struct {
     uint8_t pios_enabled;
     uint32_t gpio_base[APIO_MAX_PIO_BLOCKS];
 } _apio_emulated_pio_t;
+
 typedef struct {
-    int8_t output_block[APIO_MAX_GPIOS];
+    int8_t  output_block[APIO_MAX_GPIOS];
     uint8_t inverted[APIO_MAX_GPIOS];
     uint8_t force_input_low[APIO_MAX_GPIOS];
     uint8_t force_input_high[APIO_MAX_GPIOS];
+    // Pull resistor configuration.  Hardware reset default: pull-down.
+    uint64_t pull_up;
+    uint64_t pull_down;
+    // Input-only: output driver disabled.
+    uint64_t input_only;
+    // Drive strength per pin (APIO_DRIVE_* values).  Hardware reset default:
+    // APIO_DRIVE_4MA.
+    uint8_t drive_strength[APIO_MAX_GPIOS];
+    // Slew rate.  Hardware reset default: slow (0).
+    uint64_t slew_fast;
 } _apio_emulated_gpio_t;
+
 extern _apio_emulated_pio_t _apio_emulated_pio;
 extern _apio_emulated_gpio_t _apio_emulated_gpios;
 #define __blk  _apio_emulated_pio.block
@@ -189,13 +204,20 @@ _apio_emulated_pio_t _apio_emulated_pio = {
     .pios_enabled = 0xFF,
     .gpio_base = {0xFFFFFFFF}
 };
+// GPIO defaults match RP2350 hardware reset state:
+//   pull-down enabled, 4mA drive strength, slow slew.
 _apio_emulated_gpio_t _apio_emulated_gpios = {
-    .output_block = {[0 ... 47] = -1},
-    .inverted = {0},
+    .output_block    = {[0 ... 47] = -1},
+    .inverted        = {0},
     .force_input_low = {0},
-    .force_input_high = {0}
+    .force_input_high= {0},
+    .pull_up         = 0,
+    .pull_down       = 0x0000FFFFFFFFFFFFULL,  // bits 0-47 set
+    .input_only      = 0,
+    .drive_strength  = {[0 ... 47] = APIO_DRIVE_4MA},
+    .slew_fast       = 0,
 };
-#endif // APIO_EMU_NO_IMPL
+#endif // APIO_EMU_IMPL
 #endif // APIO_EMULATION
 
 // Include disassembler here to allow APIOX_SM_REG to be redefined for
@@ -221,7 +243,6 @@ _apio_emulated_gpio_t _apio_emulated_gpios = {
 #define APIO_ENABLE_JTAG()
 #endif // !APIO_EMULATION
 
-
 // Macro to bring IOBANK0 and PADS_BANK0 out of reset, allowing GPIO usage.
 #if !defined(APIO_EMULATION)
 #define APIO_ENABLE_GPIOS() do { \
@@ -232,25 +253,124 @@ _apio_emulated_gpio_t _apio_emulated_gpios = {
 #define APIO_ENABLE_GPIOS()
 #endif // !APIO_EMULATION
 
-// Configure a GPIO for (output) usage by a PIO block.  Also disables the
-// pad's isolation setting and any pad output disable.
+// Configure a GPIO for input/output usage by a PIO block.  Assigns the GPIO
+// function to the specified PIO block and enables the output driver.  The
+// input path remains available.
 #if !defined(APIO_EMULATION)
 _Static_assert(APIO_GPIO_CTRL_FUNC_PIO1 == (APIO_GPIO_CTRL_FUNC_PIO0 + 1), "APIO_GPIO_CTRL_FUNC_PIO1 must be APIO_GPIO_CTRL_FUNC_PIO0 + 1");
 _Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO_GPIO_CTRL_FUNC_PIO2 must be APIO_GPIO_CTRL_FUNC_PIO0 + 2");
-#define APIO_GPIO_OUTPUT(PIN, BLOCK) \
+#define APIO_GPIO_INPUT_OUTPUT(PIN, BLOCK) \
                             do { \
                                 _STATIC_BLOCK_ASSERT(BLOCK); \
                                 APIO_GPIO_CTRL(PIN) = APIO_GPIO_CTRL_FUNC_PIO0 + (BLOCK); \
                                 APIO_GPIO_PAD(PIN) &= ~(APIO_PAD_ISO_BIT | APIO_PAD_OUTPUT_DIS_BIT); \
                             } while(0)
 #else // APIO_EMULATION
-#define APIO_GPIO_OUTPUT(PIN, BLOCK) do { \
+#define APIO_GPIO_INPUT_OUTPUT(PIN, BLOCK) do { \
                                 _STATIC_BLOCK_ASSERT(BLOCK); \
                                 _apio_emulated_gpios.output_block[PIN] = BLOCK; \
                             } while(0)
 #endif // !APIO_EMULATION
 
-// Invert a GPIO pin
+// Configure a GPIO as a pure SIO input with output driver disabled.
+// On real hardware: resets GPIO_CTRL to SIO function, sets PAD to
+// input-enabled, output-disabled.
+// In emulation: marks the pin input-only; EPIO will assert on any attempt
+// to drive it as an output.
+#if !defined(APIO_EMULATION)
+#define APIO_GPIO_INPUT_ONLY(PIN) \
+                            do { \
+                                APIO_GPIO_CTRL(PIN) = APIO_GPIO_CTRL_FUNC_SIO; \
+                                APIO_GPIO_PAD(PIN) = APIO_PAD_INPUT_EN_BIT | APIO_PAD_OUTPUT_DIS_BIT; \
+                            } while(0)
+#else // APIO_EMULATION
+#define APIO_GPIO_INPUT_ONLY(PIN) do { \
+                                _apio_emulated_gpios.input_only |= (1ULL << (PIN)); \
+                            } while(0)
+#endif // !APIO_EMULATION
+
+// Configure a pull-up resistor on a GPIO.  Clears any pull-down.
+#if !defined(APIO_EMULATION)
+#define APIO_GPIO_PULL_UP(PIN) \
+                            do { \
+                                APIO_GPIO_PAD(PIN) &= ~APIO_PAD_PDE_BIT; \
+                                APIO_GPIO_PAD(PIN) |=  APIO_PAD_PUE_BIT; \
+                            } while(0)
+#else // APIO_EMULATION
+#define APIO_GPIO_PULL_UP(PIN) do { \
+                                _apio_emulated_gpios.pull_up   |=  (1ULL << (PIN)); \
+                                _apio_emulated_gpios.pull_down &= ~(1ULL << (PIN)); \
+                            } while(0)
+#endif // !APIO_EMULATION
+
+// Configure a pull-down resistor on a GPIO.  Clears any pull-up.
+#if !defined(APIO_EMULATION)
+#define APIO_GPIO_PULL_DOWN(PIN) \
+                            do { \
+                                APIO_GPIO_PAD(PIN) &= ~APIO_PAD_PUE_BIT; \
+                                APIO_GPIO_PAD(PIN) |=  APIO_PAD_PDE_BIT; \
+                            } while(0)
+#else // APIO_EMULATION
+#define APIO_GPIO_PULL_DOWN(PIN) do { \
+                                _apio_emulated_gpios.pull_down |=  (1ULL << (PIN)); \
+                                _apio_emulated_gpios.pull_up   &= ~(1ULL << (PIN)); \
+                            } while(0)
+#endif // !APIO_EMULATION
+
+// Disable both pull-up and pull-down resistors on a GPIO.
+#if !defined(APIO_EMULATION)
+#define APIO_GPIO_PULL_NONE(PIN) \
+                            do { \
+                                APIO_GPIO_PAD(PIN) &= ~(APIO_PAD_PUE_BIT | APIO_PAD_PDE_BIT); \
+                            } while(0)
+#else // APIO_EMULATION
+#define APIO_GPIO_PULL_NONE(PIN) do { \
+                                _apio_emulated_gpios.pull_up   &= ~(1ULL << (PIN)); \
+                                _apio_emulated_gpios.pull_down &= ~(1ULL << (PIN)); \
+                            } while(0)
+#endif // !APIO_EMULATION
+
+// Set the drive strength of a GPIO output.  STRENGTH must be one of
+// APIO_DRIVE_2MA, APIO_DRIVE_4MA, APIO_DRIVE_8MA, APIO_DRIVE_12MA.
+// Hardware reset default: APIO_DRIVE_4MA.
+#if !defined(APIO_EMULATION)
+#define APIO_GPIO_DRIVE(PIN, STRENGTH) \
+                            do { \
+                                APIO_GPIO_PAD(PIN) &= ~APIO_PAD_DRIVE_MASK; \
+                                APIO_GPIO_PAD(PIN) |=  APIO_PAD_DRIVE(STRENGTH); \
+                            } while(0)
+#else // APIO_EMULATION
+#define APIO_GPIO_DRIVE(PIN, STRENGTH) do { \
+                                _apio_emulated_gpios.drive_strength[PIN] = (STRENGTH); \
+                            } while(0)
+#endif // !APIO_EMULATION
+
+// Set the slew rate of a GPIO output to fast.
+// Hardware reset default: slow.
+#if !defined(APIO_EMULATION)
+#define APIO_GPIO_SLEW_FAST(PIN) \
+                            do { \
+                                APIO_GPIO_PAD(PIN) |= APIO_PAD_SLEWFAST_BIT; \
+                            } while(0)
+#else // APIO_EMULATION
+#define APIO_GPIO_SLEW_FAST(PIN) do { \
+                                _apio_emulated_gpios.slew_fast |= (1ULL << (PIN)); \
+                            } while(0)
+#endif // !APIO_EMULATION
+
+// Set the slew rate of a GPIO output to slow (hardware reset default).
+#if !defined(APIO_EMULATION)
+#define APIO_GPIO_SLEW_SLOW(PIN) \
+                            do { \
+                                APIO_GPIO_PAD(PIN) &= ~APIO_PAD_SLEWFAST_BIT; \
+                            } while(0)
+#else // APIO_EMULATION
+#define APIO_GPIO_SLEW_SLOW(PIN) do { \
+                                _apio_emulated_gpios.slew_fast &= ~(1ULL << (PIN)); \
+                            } while(0)
+#endif // !APIO_EMULATION
+
+// Invert a GPIO input
 #if !defined(APIO_EMULATION)
 #define APIO_GPIO_INPUT_INVERT(PIN) do { \
                                     APIO_GPIO_CTRL(PIN) &= ~APIO_GPIO_CTRL_INOVER_MASK; \
@@ -328,19 +448,24 @@ _Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO
                         _apio_emulated_pio.pios_enabled = _pios_enabled
 #endif // !APIO_EMULATION
 
-// Call before using APIO GPIO macros
+// Call before using APIO GPIO macros.  Resets all GPIO configuration to
+// hardware reset defaults: pull-down, 4mA drive strength, slow slew.
 #if !defined(APIO_EMULATION)
 #define APIO_GPIO_INIT()
 #else // APIO_EMULATION
-#define APIO_GPIO_INIT() do \
-                            { \
-                                for (int __i = 0; __i < APIO_MAX_GPIOS; __i++) { \
-                                    _apio_emulated_gpios.output_block[__i] = -1; \
-                                    _apio_emulated_gpios.inverted[__i] = 0; \
-                                    _apio_emulated_gpios.force_input_low[__i] = 0; \
-                                    _apio_emulated_gpios.force_input_high[__i] = 0; \
-                                } \
-                            } while(0)
+#define APIO_GPIO_INIT() do { \
+                            for (int __i = 0; __i < APIO_MAX_GPIOS; __i++) { \
+                                _apio_emulated_gpios.output_block[__i]   = -1; \
+                                _apio_emulated_gpios.inverted[__i]        = 0; \
+                                _apio_emulated_gpios.force_input_low[__i] = 0; \
+                                _apio_emulated_gpios.force_input_high[__i]= 0; \
+                                _apio_emulated_gpios.drive_strength[__i]  = APIO_DRIVE_4MA; \
+                            } \
+                            _apio_emulated_gpios.pull_up    = 0; \
+                            _apio_emulated_gpios.pull_down  = APIO_GPIO_ALL_MASK; \
+                            _apio_emulated_gpios.input_only = 0; \
+                            _apio_emulated_gpios.slew_fast  = 0; \
+                        } while(0)
 #endif // !APIO_EMULATION
 
 // Assert these, as if they change, the above stack space calculation must be updated.
@@ -436,11 +561,7 @@ _Static_assert((APIO_MAX_PIO_INSTRS == 32), "APIO_MAX_PIO_INSTRS must be 32");
 
 // Add an instruction to the current PIO program.
 #if !defined(APIO_EMULATION)
-#if defined(DEBUG_LOGGING) && (DEBUG_LOGGING == 1)
 #define APIO_ADD_INSTR(INST)    instr_scratch[__pio_offset[__blk]++] = INST
-#else // !DEBUG_LOGGING
-#define APIO_ADD_INSTR(INST)    instr_scratch[__pio_offset[__blk]++] = INST
-#endif // DEBUG_LOGGING
 #else // APIO_EMULATION
 #define APIO_ADD_INSTR(INST)    _apio_emulated_pio.instr[__blk][_apio_emulated_pio.offset[__blk]++] = INST
 #endif // !APIO_EMULATION
