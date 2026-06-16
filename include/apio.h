@@ -264,6 +264,7 @@ _Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO
                                 _STATIC_BLOCK_ASSERT(BLOCK); \
                                 APIO_GPIO_CTRL(PIN) = APIO_GPIO_CTRL_FUNC_PIO0 + (BLOCK); \
                                 APIO_GPIO_PAD(PIN) &= ~(APIO_PAD_ISO_BIT | APIO_PAD_OUTPUT_DIS_BIT); \
+                                APIO_GPIO_PAD(PIN) |=  APIO_PAD_INPUT_EN_BIT; \
                             } while(0)
 #else // APIO_EMULATION
 #define APIO_GPIO_INPUT_OUTPUT(PIN, BLOCK) do { \
