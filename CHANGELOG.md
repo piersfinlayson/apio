@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-06-18
+
+Correctly handle input/output state using `APIO_GPIO_INPUT_ONLY` and `APIO_GPIO_INPUT_OUTPUT` macros.
+
 ## 2026-06-16
 
 Added support for emulating internal GPIO pulls.
