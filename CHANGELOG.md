@@ -2,6 +2,10 @@
 
 ## 2026-06-18
 
+Re-add `APIO_GPIO_OUTPUT` as synonym for `APIO_GPIO_INPUT_OUTPUT`
+
+## 2026-06-18
+
 Correctly handle input/output state using `APIO_GPIO_INPUT_ONLY` and `APIO_GPIO_INPUT_OUTPUT` macros.
 
 ## 2026-06-16
