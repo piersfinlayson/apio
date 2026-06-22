@@ -270,6 +270,7 @@ _Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO
 #define APIO_GPIO_INPUT_OUTPUT(PIN, BLOCK) do { \
                                 _STATIC_BLOCK_ASSERT(BLOCK); \
                                 _apio_emulated_gpios.output_block[PIN] = BLOCK; \
+                                _apio_emulated_gpios.input_only &= ~(1ULL << (PIN)); \
                             } while(0)
 #endif // !APIO_EMULATION
 
@@ -286,6 +287,7 @@ _Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO
                             } while(0)
 #else // APIO_EMULATION
 #define APIO_GPIO_INPUT_ONLY(PIN) do { \
+                                _apio_emulated_gpios.output_block[PIN] = -1; \
                                 _apio_emulated_gpios.input_only |= (1ULL << (PIN)); \
                             } while(0)
 #endif // !APIO_EMULATION
