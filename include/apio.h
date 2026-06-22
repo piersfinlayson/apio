@@ -273,6 +273,8 @@ _Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO
                                 _apio_emulated_gpios.input_only &= ~(1ULL << (PIN)); \
                             } while(0)
 #endif // !APIO_EMULATION
+// Retain APIO_GPIO_OUTPUT for backwards compatibility
+#define APIO_GPIO_OUTPUT APIO_GPIO_INPUT_OUTPUT
 
 // Configure a GPIO as a pure SIO input with output driver disabled.
 // On real hardware: resets GPIO_CTRL to SIO function, sets PAD to

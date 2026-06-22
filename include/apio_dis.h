@@ -207,7 +207,7 @@ static const char* piorom_get_set_dest(uint8_t dest) {
 // Returns the name for an EXECCTRL STATUS_SEL value.
 // sel is APIO_EXECCTRL_STATUS_SEL_FROM_REG(execctrl), i.e. (reg >> 5) & 0x3,
 // matching APIO_STATUS_SEL_{TXLEVEL,RXLEVEL,IRQ} >> 5.
-static const char* apio_get_status_sel_str(uint8_t sel) {
+static __attribute__((unused)) const char* apio_get_status_sel_str(uint8_t sel) {
     switch (sel) {
         case 0: return "TXLEVEL";  // APIO_STATUS_SEL_TXLEVEL >> 5
         case 1: return "RXLEVEL";  // APIO_STATUS_SEL_RXLEVEL >> 5
@@ -494,6 +494,7 @@ void apio_log_sm(
 ) {
     volatile pio_sm_reg_t *sm_reg;
     char instr[64];
+    (void)sm_name;
     
     // Get the correct PIO block's SM register
     if (pio_block == 0) {
@@ -546,6 +547,37 @@ void apio_log_sm(
     uint8_t in_base       = (uint8_t)APIO_IN_BASE_FROM_REG(pinctrl);
     uint8_t sideset_base  = (uint8_t)APIO_SIDE_SET_BASE_FROM_REG(pinctrl);
     uint8_t sideset_count = (uint8_t)APIO_SIDE_SET_COUNT_FROM_REG(pinctrl);
+
+    /* Suppress unused-variable warnings when APIO_LOG_ENABLE is a no-op */
+    (void)clkdiv_int;
+    (void)clkdiv_frac;
+    (void)exec_stalled;
+    (void)side_en;
+    (void)side_pindir;
+    (void)jmp_pin;
+    (void)out_en_sel;
+    (void)inline_out_en;
+    (void)out_sticky;
+    (void)status_sel;
+    (void)status_n;
+    (void)fjoin_rx;
+    (void)fjoin_tx;
+    (void)fjoin_rx_put;
+    (void)fjoin_rx_get;
+    (void)autopush;
+    (void)autopull;
+    (void)in_shiftdir;
+    (void)out_shiftdir;
+    (void)push_thresh;
+    (void)pull_thresh;
+    (void)in_count;
+    (void)out_base;
+    (void)out_count;
+    (void)set_base;
+    (void)set_count;
+    (void)in_base;
+    (void)sideset_base;
+    (void)sideset_count;
 
     APIO_LOG("PIO%d:%d %s (%d instructions)", pio_block, pio_sm, sm_name, (end - first_instr + 1));
 
