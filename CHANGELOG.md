@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-06-22
+
+Handle INPUT_OUTPUT in emulator properly
+
 ## 2026-06-18
 
 Re-add `APIO_GPIO_OUTPUT` as synonym for `APIO_GPIO_INPUT_OUTPUT`
