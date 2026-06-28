@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-06-28
+
+Add `APIO_ASM_CONTINUE()` to allow subsequent modification of PIOs after the initial setup.
+
 ## 2026-06-22
 
 Handle INPUT_OUTPUT in emulator properly

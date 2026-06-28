@@ -1,24 +1,6 @@
+// Copyright (C) 2026 Piers Finlayson <piers@piers.rocks>
+//
 // MIT License
-//
-// Copyright (c) 2026 Piers Finlayson <piers@piers.rocks>
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-// DEALINGS IN THE SOFTWARE.
 
 // apio - Runtime RP2350 PIO Assembler and Disassembler
 //
@@ -39,6 +21,10 @@
 //
 // 1.  At the beginning of your PIO building function, call `APIO_ASM_INIT()`
 //     to declare and initialise the necessary variables.
+//
+//     If the function is extending an already-configured PIO setup (e.g.
+//     adding state machines to a block that was already written by an earlier
+//     call), use `APIO_ASM_CONTINUE()` instead.  See its documentation below.
 //
 // 2.  (Optional) Clear all PIO IRQs using `APIO_CLEAR_ALL_IRQS()`.
 //
@@ -433,7 +419,16 @@ _Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO
                                 }
 #endif // !APIO_EMULATION
 
-// Call before creating PIO programs
+// Call at the start of a function that builds PIO programs from scratch.
+// Declares the local variables used by all subsequent APIO macros in this
+// function scope.
+//
+// In emulation mode, resets the accumulated apio state (preserving only
+// pios_enabled) so the new build starts clean.
+//
+// Use APIO_ASM_CONTINUE() instead when the function extends an
+// already-configured PIO setup (e.g. adding state machines to a block that
+// was already written by an earlier call).
 //
 // Uses around 128 bytes of stack space in RP2350 hardware case.
 #if !defined(APIO_EMULATION)
@@ -451,6 +446,33 @@ _Static_assert(APIO_GPIO_CTRL_FUNC_PIO2 == (APIO_GPIO_CTRL_FUNC_PIO0 + 2), "APIO
 #define APIO_ASM_INIT() uint8_t _pios_enabled = _apio_emulated_pio.pios_enabled; \
                         _apio_emulated_pio = (_apio_emulated_pio_t){0};                    \
                         _apio_emulated_pio.pios_enabled = _pios_enabled
+#endif // !APIO_EMULATION
+
+// Call at the start of a function that extends an already-configured PIO
+// setup — i.e. one that appends new state machines to a block already written
+// by an earlier APIO_ASM_INIT() call, or that issues APIO_SM_EXEC_INSTR
+// against a live SM without touching the program memory at all.
+//
+// In non-emulation mode this delegates to APIO_ASM_INIT(), which declares
+// the local variables required by all APIO macros.  The block offset is then
+// positioned correctly by the caller via APIO_SET_BLOCK_FROM() or
+// APIO_SET_BLOCK_FROM_VAR().
+//
+// In emulation mode this is a deliberate no-op: __blk, __sm, __pio_offset
+// and the per-SM tracking arrays are all macros over the global
+// _apio_emulated_pio, so they are already in scope and already hold the
+// accumulated state from all prior APIO_ASM_INIT() / APIO_ASM_CONTINUE()
+// calls.  Preserving that state is exactly what allows epio_update_from_apio()
+// to pick up new programs, SM configs, pre_instrs, and tx_fifos written by
+// this function without disturbing the configuration laid down earlier.
+#if !defined(APIO_EMULATION)
+// In non-emulation mode, APIO_ASM_CONTINUE() is identical to APIO_ASM_INIT():
+// the local variables required by all APIO macros must still be declared, and
+// the block offset is positioned correctly by the subsequent
+// APIO_SET_BLOCK_FROM() or APIO_SET_BLOCK_FROM_VAR() call.
+#define APIO_ASM_CONTINUE()  APIO_ASM_INIT()
+#else // APIO_EMULATION
+#define APIO_ASM_CONTINUE() /* no-op in emulation: accumulated apio state is preserved */
 #endif // !APIO_EMULATION
 
 // Call before using APIO GPIO macros.  Resets all GPIO configuration to
