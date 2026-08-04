@@ -104,10 +104,12 @@ APIO_VERSION ?= v0.2.0
 
 apio:
 	@if [ ! -d "$@" ]; then \
-		git clone --quiet --depth 1 --branch $(APIO_VERSION) \
-			https://github.com/piersfinlayson/apio.git; \
+		git -c advice.detachedHead=false clone --quiet --depth 1 \
+			--branch $(APIO_VERSION) https://github.com/piersfinlayson/apio.git; \
 	fi
 ```
+
+Checking out a tag leaves the repository with a detached `HEAD`, which is what you want for a vendored copy - the contents are then frozen at that release.  The `-c advice.detachedHead=false` just suppresses git's advice message about it, to keep the build output readable.
 
 Note that this target will not update an existing checkout - after bumping `APIO_VERSION`, remove the `apio/` directory so it is re-cloned.
 
