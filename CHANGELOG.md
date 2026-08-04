@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.2.0 - 2026-06-28
+
+Covers the changes dated 2026-06-10 to 2026-06-28, detailed in the entries below.
+
+**Breaking**: `APIO_GPIO_INIT()` now initialises all pins to the RP2350 hardware
+reset defaults - pull-down enabled, 4 mA drive, slow slew.  Code written against
+v0.1.0, where no pull state was tracked, may behave differently without any
+compiler diagnostic.  The rename of `APIO_GPIO_OUTPUT` to
+`APIO_GPIO_INPUT_OUTPUT` is *not* breaking - `APIO_GPIO_OUTPUT` is retained as a
+synonym.
+
+Added:
+
+- Pad configuration macros: `APIO_GPIO_PULL_UP`, `APIO_GPIO_PULL_DOWN`,
+  `APIO_GPIO_PULL_NONE`, `APIO_GPIO_DRIVE`, `APIO_GPIO_SLEW_FAST`,
+  `APIO_GPIO_SLEW_SLOW`, `APIO_GPIO_INPUT_ONLY`.
+- `APIO_ASM_CONTINUE()`, to modify PIOs after the initial setup.
+- Block and SM addressing: `APIO_INSTR_COUNT`, `APIO_SET_BLOCK_VAR`,
+  `APIO_SET_BLOCK_FROM`, `APIO_SET_BLOCK_FROM_VAR`, `APIO_SET_SM_VAR`,
+  `APIO_END_BLOCK_FROM`.
+- Register logging in `APIO_SM_LOG`.
+
 ## 2026-06-28
 
 Add `APIO_ASM_CONTINUE()` to allow subsequent modification of PIOs after the initial setup.

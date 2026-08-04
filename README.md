@@ -87,6 +87,30 @@ CLKDIV: 15000.00 EXECCTRL: 0x00002080 SHIFTCTRL: 0x00000000 PINCTRL: 0x04000000
 - Suitable C compiler, e.g. `gcc`.
 - Minimal global data usage, for stored PIO programs.
 
+## Versioning
+
+`apio` follows [semantic versioning](https://semver.org/), with each release tagged in git.  While the major version is 0, breaking changes are released in a new minor version, and additions and fixes in a new patch version.  See [CHANGELOG.md](CHANGELOG.md) for what changed in each release.
+
+`main` is not a release branch, and may take breaking changes at any time.  Pin your project to a tag:
+
+```bash
+git clone --depth 1 --branch v0.2.0 https://github.com/piersfinlayson/apio.git
+```
+
+If your project clones `apio` from a `Makefile`, keep the version in a variable, so it is visible and easy to bump:
+
+```make
+APIO_VERSION ?= v0.2.0
+
+apio:
+	@if [ ! -d "$@" ]; then \
+		git clone --quiet --depth 1 --branch $(APIO_VERSION) \
+			https://github.com/piersfinlayson/apio.git; \
+	fi
+```
+
+Note that this target will not update an existing checkout - after bumping `APIO_VERSION`, remove the `apio/` directory so it is re-cloned.
+
 ## Emulation
 
 `apio` integrates with [`epio`](https://github.com/piersfinlayson/epio) for seamless PIO program emulation on non-RP2350 hosts, including CI runners.
