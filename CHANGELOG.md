@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.1 - 2026-08-10
+
+Fixed:
+
+- The state machine dump in `apio_dis.h` passed `uint32_t` values to `%08X`,
+  which expects `unsigned int`.  `uint32_t` is `unsigned long` on
+  arm-none-eabi, so the output was correct and nothing misbehaved, but a
+  consumer that gives its logging function a `format(printf)` attribute - as
+  One ROM now does - cannot build against it.  The values are cast, and the
+  conversions qualified, so the format is right under both that ABI and a
+  64 bit host where `uint32_t` is `unsigned int`.
+
 ## v0.2.0 - 2026-06-28
 
 Covers the changes dated 2026-06-10 to 2026-06-28, detailed in the entries below.

@@ -583,21 +583,22 @@ void apio_log_sm(
 
     APIO_LOG("  CLKDIV: %d.%02d", clkdiv_int, clkdiv_frac);
 
-    APIO_LOG("  EXECCTRL: 0x%08X%s", execctrl, exec_stalled ? " [STALLED]" : "");
+    APIO_LOG("  EXECCTRL: 0x%08lX%s", (unsigned long)execctrl,
+             exec_stalled ? " [STALLED]" : "");
     APIO_LOG("    wrap=%d:%d  side: en=%d pindir=%d  jmp_pin=%d",
         wrap_bottom, wrap_top, side_en, side_pindir, jmp_pin);
     APIO_LOG("    out: sticky=%d inline_en=%d en_sel=%d  status: %s<%d",
         out_sticky, inline_out_en, out_en_sel,
         apio_get_status_sel_str(status_sel), status_n);
 
-    APIO_LOG("  SHIFTCTRL: 0x%08X", shiftctrl);
+    APIO_LOG("  SHIFTCTRL: 0x%08lX", (unsigned long)shiftctrl);
     APIO_LOG("    in:  autopush=%d thresh=%d dir=%c  out: autopull=%d thresh=%d dir=%c",
         autopush, push_thresh, in_shiftdir  ? 'R' : 'L',
         autopull, pull_thresh, out_shiftdir ? 'R' : 'L');
     APIO_LOG("    fjoin: tx=%d rx=%d rx_put=%d rx_get=%d  in_count=%d",
         fjoin_tx, fjoin_rx, fjoin_rx_put, fjoin_rx_get, in_count);
 
-    APIO_LOG("  PINCTRL: 0x%08X", pinctrl);
+    APIO_LOG("  PINCTRL: 0x%08lX", (unsigned long)pinctrl);
     APIO_LOG("    out: base=%d count=%d  set: base=%d count=%d  in_base=%d",
         out_base, out_count, set_base, set_count, in_base);
     APIO_LOG("    side: base=%d count=%d", sideset_base, sideset_count);
