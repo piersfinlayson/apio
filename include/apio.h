@@ -119,6 +119,21 @@ typedef struct {
     uint8_t block_ended[APIO_MAX_PIO_BLOCKS];
     uint8_t pios_enabled;
     uint32_t gpio_base[APIO_MAX_PIO_BLOCKS];
+
+    // Members are appended here rather than inserted above.  This structure is
+    // defined by whichever consumer compiles it, and read by every other, so
+    // an insertion moves every member below it and a consumer built against a
+    // different version of this header reads them all at the wrong offset.
+    // Appending confines the disagreement to the members it does not have.
+
+    // Words a full TX FIFO discarded, per SM.  A device raises FDEBUG_TXOVER
+    // and drops the word, so a caller that overfills loses data either way -
+    // this is what lets a test see that it happened.
+    uint8_t tx_fifo_overflow[APIO_MAX_PIO_BLOCKS][APIO_MAX_SMS_PER_BLOCK];
+
+    // Where a discarded word goes, so APIO_TXF stays an assignable expression
+    // whether or not the FIFO has room.  Never read.
+    uint32_t tx_discard;
 } _apio_emulated_pio_t;
 
 typedef struct {
@@ -188,7 +203,9 @@ _apio_emulated_pio_t _apio_emulated_pio = {
     .sm = 0xFF,
     .block_ended = {0xFF},
     .pios_enabled = 0xFF,
-    .gpio_base = {0xFFFFFFFF}
+    .gpio_base = {0xFFFFFFFF},
+    .tx_fifo_overflow = {{0xFF}},
+    .tx_discard = 0xFFFFFFFF
 };
 // GPIO defaults match RP2350 hardware reset state:
 //   pull-down enabled, 4mA drive strength, slow slew.
@@ -634,21 +651,76 @@ static inline volatile uint32_t* _apio_rxf_ptr(uint8_t block, uint8_t sm) {
     else if (block == 1) return (volatile uint32_t *)((uintptr_t)APIO1_BASE + APIO_RXF_OFFSET + (sm * 0x04));
     else return (volatile uint32_t *)((uintptr_t)APIO2_BASE + APIO_RXF_OFFSET + (sm * 0x04));
 }
+// Pops a word the state machine pushed.  Yields a value rather than the
+// register itself, so a write through APIO_RXF does not compile.
+static inline uint32_t _apio_rxf_read(uint8_t block, uint8_t sm) {
+    return *_apio_rxf_ptr(block, sm);
+}
 #endif // !APIO_EMULATION
 
-// Access the current SM's TX FIFO
+#if defined(APIO_EMULATION)
+// Where the next word written to an SM's TX FIFO goes.
+//
+// A device's FIFO is four words deep and discards anything written to a full
+// one, keeping what is already queued.  This does the same.  Past the depth
+// the word lands in a sink nothing reads, and the discard is counted, so a
+// test can assert it.
+static inline uint32_t *_apio_emu_txf_ptr(uint8_t block, uint8_t sm) {
+    uint8_t *count = &_apio_emulated_pio.tx_fifo_count[block][sm];
+
+    if (*count >= APIO_MAX_FIFO_DEPTH) {
+        _apio_emulated_pio.tx_fifo_overflow[block][sm]++;
+        return &_apio_emulated_pio.tx_discard;
+    }
+
+    return &_apio_emulated_pio.tx_fifos[block][sm][(*count)++];
+}
+
+// The word an SM's RX FIFO holds next, or zero where it holds nothing.
+//
+// The emulated FIFO is filled by the emulator running the program, not from
+// here, so this reads and does not pop.  An SM's output is a property of the
+// run, and a test reading it twice should see the same thing.
+static inline uint32_t _apio_emu_rxf(uint8_t block, uint8_t sm) {
+    if (_apio_emulated_pio.rx_fifo_count[block][sm] == 0) {
+        return 0;
+    }
+
+    return _apio_emulated_pio.rx_fifos[block][sm][0];
+}
+#endif // APIO_EMULATION
+
+// Write a named SM's TX FIFO, without needing the assembler's block and SM
+// variables in scope.
+//
+// APIO_TXF reaches only the SM the assembler is currently building, and
+// getting there means APIO_SET_SM, which resets that SM's program bookkeeping.
+// That is right while building a program and wrong for code that feeds a
+// running state machine, which is what this is for.
 #if !defined(APIO_EMULATION)
-#define APIO_TXF (*_apio_txf_ptr(__blk, __sm))
+#define APIO_TXF_AT(BLOCK, SM)  (*_apio_txf_ptr((BLOCK), (SM)))
 #else // APIO_EMULATION
-#define APIO_TXF _apio_emulated_pio.tx_fifos[__blk][__sm][_apio_emulated_pio.tx_fifo_count[__blk][__sm]++]
+#define APIO_TXF_AT(BLOCK, SM)  (*_apio_emu_txf_ptr((BLOCK), (SM)))
 #endif // !APIO_EMULATION
 
-// Access the current SM's RX FIFO
+// Read a named SM's RX FIFO.  Not assignable - see APIO_RXF.
 #if !defined(APIO_EMULATION)
-#define APIO_RXF (*_apio_rxf_ptr(__blk, __sm))
+#define APIO_RXF_AT(BLOCK, SM)  _apio_rxf_read((BLOCK), (SM))
 #else // APIO_EMULATION
-#define APIO_RXF _apio_emulated_pio.rx_fifos[__blk][__sm][_apio_emulated_pio.rx_fifo_count[__blk][__sm]++]
+#define APIO_RXF_AT(BLOCK, SM)  _apio_emu_rxf((BLOCK), (SM))
 #endif // !APIO_EMULATION
+
+// Access the current SM's TX FIFO.
+#define APIO_TXF  APIO_TXF_AT(__blk, __sm)
+
+// Read the current SM's RX FIFO.
+//
+// A read, and only a read.  RXFn is read-only to the processor, so this yields
+// a value rather than an lvalue and a write through it does not compile.
+//
+// To place a word in an emulated RX FIFO, tell the emulator - epio exposes
+// epio_push_rx_fifo() for exactly that.
+#define APIO_RXF  APIO_RXF_AT(__blk, __sm)
 
 // Set the current PIO SM to jump to its start instruction after
 // configuration.  The PIO SM will only be started by explicitly enabling.

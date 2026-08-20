@@ -1,5 +1,34 @@
 # Changelog
 
+## v0.3.0 - 2026-08-20
+
+**Breaking**: `APIO_RXF` no longer yields something you can assign to.  It is a
+read, which is what it always was on a device - RXFn is read-only to the
+processor, so a write through it never reached the hardware.  Under emulation it
+did the opposite, appending a word as though a state machine had produced one,
+so the same name moved data in opposite directions depending on the build.  A
+write is now a compile error in both, rather than silently doing nothing on one
+and something unrelated on the other.  To place a word in an emulated RX FIFO,
+tell the emulator - epio's `epio_push_rx_fifo()` does it.
+
+Added:
+
+- `APIO_TXF_AT(BLOCK, SM)` and `APIO_RXF_AT(BLOCK, SM)`, which reach a named
+  state machine's FIFO.  `APIO_TXF` and `APIO_RXF` address only the SM the
+  assembler is currently building, and reaching another means `APIO_SET_SM`,
+  which resets that SM's program bookkeeping.  That is right while building a
+  program and wrong for code feeding a state machine that is already running.
+  `APIO_TXF` and `APIO_RXF` are now defined in terms of these.
+- `tx_fifo_overflow` in the emulation state, counting the words a full TX FIFO
+  discarded, so a test can assert the discard rather than infer it.
+
+Fixed:
+
+- The emulated `APIO_TXF` wrote at `tx_fifo_count++` with no bound, running past
+  the end of the FIFO row once more words were written than the FIFO is deep.
+  It now discards the word and counts it, which is what a device does with a
+  write to a full FIFO.
+
 ## v0.2.1 - 2026-08-10
 
 Fixed:

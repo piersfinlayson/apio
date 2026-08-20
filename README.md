@@ -94,13 +94,13 @@ CLKDIV: 15000.00 EXECCTRL: 0x00002080 SHIFTCTRL: 0x00000000 PINCTRL: 0x04000000
 `main` is not a release branch, and may take breaking changes at any time.  Pin your project to a tag:
 
 ```bash
-git clone --depth 1 --branch v0.2.0 https://github.com/piersfinlayson/apio.git
+git clone --depth 1 --branch v0.3.0 https://github.com/piersfinlayson/apio.git
 ```
 
 If your project clones `apio` from a `Makefile`, keep the version in a variable, so it is visible and easy to bump:
 
 ```make
-APIO_VERSION ?= v0.2.0
+APIO_VERSION ?= v0.3.0
 
 apio:
 	@if [ ! -d "$@" ]; then \
